@@ -85,33 +85,33 @@ export default async function CategoryPage({ params }: PageProps) {
   }
 
   return (
-    <div className="bg-gray-50 min-h-screen">
-      <div className="container mx-auto px-4 py-12">
+    <div className="bg-white dark:bg-[#0a0a0a] min-h-screen">
+      <div className="content-container py-8 md:py-12">
         {/* Category Header */}
-        <div className="mb-12">
-          <h1 className="text-4xl md:text-5xl font-bold uppercase tracking-tight mb-4">
+        <div className="mb-12 pb-8 border-b border-border">
+          <h1 className="font-serif font-bold text-4xl md:text-5xl lg:text-6xl leading-tight mb-4 text-black dark:text-white uppercase tracking-tight">
             {category.name}
           </h1>
           {category.description && (
-            <p className="text-xl text-muted-foreground">{category.description}</p>
+            <p className="text-xl text-[#666666] dark:text-[#999999]">{category.description}</p>
           )}
         </div>
 
         {/* Articles Grid */}
         {articles.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+          <div className="space-y-8">
             {articles.map((article) => (
               <ArticleCard
                 key={article.id}
                 article={article}
-                size="small"
-                showExcerpt={false}
+                size="medium"
+                showExcerpt={true}
               />
             ))}
           </div>
         ) : (
           <div className="text-center py-20">
-            <p className="text-muted-foreground text-lg">
+            <p className="text-[#666666] dark:text-[#999999] text-lg">
               No articles found in this category yet.
             </p>
           </div>

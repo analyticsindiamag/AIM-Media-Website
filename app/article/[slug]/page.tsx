@@ -158,83 +158,101 @@ export default async function ArticlePage({ params }: PageProps) {
         }}
       />
 
-      <article className="bg-white">
-        <div className="article-container px-4 py-8">
-          {/* Featured Image first */}
+      <article className="bg-white dark:bg-[#0a0a0a]">
+        <div className="article-container py-8 md:py-12">
+          {/* Hero Image */}
           {article.featuredImage && (
-            <div className="relative w-full h-[400px] md:h-[560px] mb-8 image-frame">
+            <div className="relative w-full h-[400px] md:h-[500px] lg:h-[600px] mb-8 md:mb-12 image-frame">
               <Image
                 src={article.featuredImage}
                 alt={article.title}
                 fill
                 priority
                 className="object-cover"
-                sizes="(max-width: 768px) 100vw, 720px"
+                sizes="(max-width: 768px) 100vw, 900px"
               />
             </div>
           )}
 
           {/* Title */}
-          <h1 className="font-serif font-bold text-4xl md:text-5xl lg:text-6xl leading-tight mb-4">
+          <h1 className="font-serif font-bold text-4xl md:text-5xl lg:text-6xl leading-tight mb-6 text-black dark:text-white">
             {article.title}
           </h1>
 
           {/* Subheading */}
           {article.excerpt && (
-            <p className="text-xl text-[var(--muted-foreground)] leading-relaxed mb-4">
+            <p className="text-xl md:text-2xl text-[#666666] dark:text-[#999999] leading-relaxed mb-6 font-normal">
               {article.excerpt}
             </p>
           )}
 
-          {/* Byline / Meta */}
-          <div className="text-sm text-[var(--muted-foreground)] mb-6">
+          {/* Byline / Meta - NYT Style */}
+          <div className="text-sm text-[#666666] dark:text-[#999999] mb-8 pb-8 border-b border-border">
             {article.publishedAt && format(article.publishedAt, 'MMMM d, yyyy')}
-            {' · '}By <span className="italic">{article.editor.name}</span>
-            {' · '}In{' '}
-            <Link href={`/category/${article.category.slug}`} className="hover:underline">
+            {' · '}
+            By <span className="italic">{article.editor.name}</span>
+            {' · '}
+            In{' '}
+            <Link 
+              href={`/category/${article.category.slug}`} 
+              className="hover:underline text-black dark:text-white"
+            >
               {article.category.name}
             </Link>
-            {' · '}{article.views} views
           </div>
 
-          {/* Share */}
+          {/* Share Buttons */}
           <div className="mb-8">
             <ShareButtons url={canonicalUrl} title={article.title} />
           </div>
 
-          {/* Article Content */}
-          <div className="prose prose-lg max-w-none" dangerouslySetInnerHTML={{ __html: article.content }} />
+          {/* Article Content - NYT Style Body */}
+          <div 
+            className="prose prose-lg max-w-none article-content"
+            dangerouslySetInnerHTML={{ __html: article.content }}
+          />
 
-          {/* Author */}
+          {/* Author Bio */}
           <div className="mt-12 pt-8 border-t border-border">
-            <div className="text-sm text-[var(--muted-foreground)]">Written by</div>
-            <div className="text-lg">{article.editor.name}</div>
+            <div className="text-sm text-[#666666] dark:text-[#999999] mb-2">Written by</div>
+            <div className="text-lg font-serif font-bold text-black dark:text-white">{article.editor.name}</div>
+            {article.editor.bio && (
+              <div className="text-base text-[#666666] dark:text-[#999999] mt-2">{article.editor.bio}</div>
+            )}
           </div>
         </div>
 
         {/* Related Articles */}
         {relatedArticles.length > 0 && (
-          <div className="border-top border-border bg-white py-10">
-            <div className="content-container px-4">
-              <h2 className="text-[13px] tracking-wide uppercase text-[var(--muted-foreground)] mb-6">Related Articles</h2>
+          <div className="border-t border-border bg-white dark:bg-[#0a0a0a] py-10 md:py-12">
+            <div className="content-container">
+              <h2 className="text-[13px] tracking-wide uppercase text-[#666666] dark:text-[#999999] mb-8 font-bold">
+                Related Articles
+              </h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {relatedArticles.map((relatedArticle) => (
                   <article key={relatedArticle.id} className="group">
                     <Link href={`/article/${relatedArticle.slug}`}>
                       {relatedArticle.featuredImage && (
-                        <div className="relative w-full h-[200px] overflow-hidden image-frame mb-3">
+                        <div className="relative w-full h-[200px] md:h-[240px] overflow-hidden image-frame mb-4">
                           <Image
                             src={relatedArticle.featuredImage}
                             alt={relatedArticle.title}
                             fill
-                            className="object-cover"
+                            loading="lazy"
+                            className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
                             sizes="(max-width: 768px) 100vw, 33vw"
                           />
                         </div>
                       )}
-                      <h3 className="font-serif font-bold text-xl leading-tight group-hover:underline">
+                      <h3 className="font-serif font-bold text-xl md:text-2xl leading-tight text-black dark:text-white group-hover:underline mb-2">
                         {relatedArticle.title}
                       </h3>
+                      <div className="text-[13px] text-[#666666] dark:text-[#999999]">
+                        {relatedArticle.publishedAt && format(relatedArticle.publishedAt, 'MMM d, yyyy')}
+                        {relatedArticle.publishedAt && ' · '}
+                        {relatedArticle.editor.name}
+                      </div>
                     </Link>
                   </article>
                 ))}

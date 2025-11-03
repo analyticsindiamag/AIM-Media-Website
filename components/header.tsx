@@ -52,63 +52,111 @@ export function Header() {
   if (pathname?.startsWith('/admin')) return null
 
   return (
-    <header className="border-b border-border bg-white sticky top-0 z-50">
-      <div className="content-container px-4">
-        {/* Top row: wordmark, controls */}
-        <div className="flex items-center justify-between h-16">
-          <Link href="/" className="flex items-center" aria-label="Home">
-            <div className="font-serif font-black tracking-tight text-3xl text-black">Port</div>
+    <header className="border-b border-border bg-white dark:bg-[#0a0a0a] sticky top-0 z-50">
+      {/* Top bar - NYT style */}
+      <div className="border-b border-border bg-white dark:bg-[#0a0a0a]">
+        <div className="content-container">
+          <div className="flex items-center justify-between h-8 px-4 md:px-8 text-[11px]">
+            <div className="flex items-center gap-4">
+              <Link href="/" className="text-black dark:text-white hover:text-[#666666] dark:hover:text-[#999999] uppercase font-medium">
+                Home
+              </Link>
+              <Link href="/category/enterprise-ai" className="text-black dark:text-white hover:text-[#666666] dark:hover:text-[#999999] uppercase font-medium">
+                Enterprise AI
+              </Link>
+              <Link href="/category/ai-startups" className="text-black dark:text-white hover:text-[#666666] dark:hover:text-[#999999] uppercase font-medium">
+                AI Startups
+              </Link>
+            </div>
+            <div className="flex items-center gap-4">
+              <button className="text-black dark:text-white hover:text-[#666666] dark:hover:text-[#999999] uppercase font-medium">
+                Subscribe
+              </button>
+              <button className="text-black dark:text-white hover:text-[#666666] dark:hover:text-[#999999] uppercase font-medium">
+                Log In
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="content-container">
+        {/* Main header: centered logo and nav */}
+        <div className="flex items-center justify-between h-20 px-4 md:px-8">
+          {/* Search icon on left */}
+          <button
+            className="p-2 transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#1a1a1a] rounded"
+            aria-label="Search"
+            onClick={() => setShowSearch(true)}
+          >
+            <Search className="w-5 h-5 text-black dark:text-white" />
+          </button>
+          
+          {/* Centered Logo */}
+          <Link href="/" className="flex items-center flex-1 justify-center" aria-label="Home">
+            <div className="font-serif font-black tracking-tight text-4xl md:text-5xl lg:text-6xl text-black dark:text-white text-center">
+              Port
+            </div>
           </Link>
-          <div className="flex items-center gap-2">
+          
+          {/* Right side: dark mode */}
+          <div className="flex items-center gap-1">
             <button
-              className="p-2 rounded transition-colors hover:bg-secondary"
-              aria-label="Search"
-              onClick={() => setShowSearch(true)}
-            >
-              <Search className="w-5 h-5 text-black" />
-            </button>
-            <button
-              className="p-2 rounded transition-colors hover:bg-secondary"
+              className="p-2 transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#1a1a1a] rounded"
               aria-label="Toggle dark mode"
               onClick={toggleTheme}
             >
-              {theme === 'dark' ? <Sun className="w-5 h-5 text-black" /> : <Moon className="w-5 h-5 text-black" />}
+              {theme === 'dark' ? (
+                <Sun className="w-5 h-5 text-black dark:text-white" />
+              ) : (
+                <Moon className="w-5 h-5 text-black dark:text-white" />
+              )}
             </button>
           </div>
         </div>
-        {/* Nav row */}
-        <nav className="hidden md:flex items-center gap-6 h-10 border-t border-border">
-          {navLinks.map((l) => (
-            <Link
-              key={l.href}
-              href={l.href}
-              className="text-[12px] tracking-wide uppercase text-[var(--muted-foreground)] hover:text-black hover:underline py-2"
-            >
-              {l.label}
-            </Link>
-          ))}
+        
+        {/* Main Navigation row */}
+        <nav className="border-t border-border px-4 md:px-8">
+          <div className="flex items-center justify-center gap-6 h-12 overflow-x-auto">
+            {navLinks.map((l) => (
+              <Link
+                key={l.href}
+                href={l.href}
+                className="text-[13px] tracking-wide uppercase text-black dark:text-white hover:text-[#666666] dark:hover:text-[#999999] transition-colors py-2 whitespace-nowrap font-medium"
+              >
+                {l.label}
+              </Link>
+            ))}
+          </div>
         </nav>
       </div>
 
-      {/* Search overlay */}
+      {/* Search overlay - NYT style */}
       {showSearch && (
-        <div className="fixed inset-0 z-[60] bg-black/50" onClick={() => setShowSearch(false)}>
+        <div 
+          className="fixed inset-0 z-[60] bg-black/70 dark:bg-black/90" 
+          onClick={() => setShowSearch(false)}
+        >
           <div
-            className="content-container px-4"
+            className="content-container px-4 md:px-8 pt-24"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="mt-24 bg-white p-4 md:p-6 border border-border shadow-sm">
-              <input
-                autoFocus
-                type="search"
-                placeholder="Search articles..."
-                aria-label="Search"
-                className="w-full px-4 py-3 border border-border focus:outline-none focus:ring-1 focus:ring-[var(--ring)]"
-                onKeyDown={(e) => {
-                  if (e.key === 'Escape') setShowSearch(false)
-                }}
-              />
-              <div className="text-xs text-[var(--muted-foreground)] mt-2">Press Esc to close</div>
+            <div className="bg-white dark:bg-[#111111] border border-border shadow-lg max-w-2xl mx-auto">
+              <div className="p-6">
+                <input
+                  autoFocus
+                  type="search"
+                  placeholder="Search articles..."
+                  aria-label="Search"
+                  className="w-full px-4 py-4 text-lg border-0 border-b-2 border-[#e6e6e6] dark:border-[#2a2a2a] bg-transparent text-black dark:text-white focus:outline-none focus:border-black dark:focus:border-white transition-colors"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Escape') setShowSearch(false)
+                  }}
+                />
+                <div className="text-xs text-[#666666] dark:text-[#999999] mt-3">
+                  Press Esc to close
+                </div>
+              </div>
             </div>
           </div>
         </div>

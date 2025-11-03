@@ -51,10 +51,10 @@
 }
 
 :root {
-  /* NYT-inspired minimal palette */
-  --radius: 0.5rem;
+  /* NYT-inspired minimal palette - Pure black/white/grey */
+  --radius: 0;
   --background: #ffffff;
-  --foreground: #000000; /* primary text */
+  --foreground: #000000; /* primary text - pure black */
   --card: #ffffff;
   --card-foreground: #000000;
   --popover: #ffffff;
@@ -64,7 +64,8 @@
   --secondary: #f5f5f5; /* quiet surfaces */
   --secondary-foreground: #000000;
   --muted: #f5f5f5;
-  --muted-foreground: #666666; /* metadata */
+  --muted-foreground: #666666; /* metadata - exactly #666666 */
+  --muted-light: #999999; /* lighter metadata - exactly #999999 */
   --accent: #eeeeee; /* subtle separators */
   --accent-foreground: #000000;
   --destructive: #cc0000;
@@ -89,19 +90,20 @@
 
 .dark {
   --background: #0a0a0a;
-  --foreground: #f3f3f3;
+  --foreground: #ffffff; /* white text in dark mode */
   --card: #111111;
-  --card-foreground: #f3f3f3;
+  --card-foreground: #ffffff;
   --popover: #111111;
-  --popover-foreground: #f3f3f3;
-  --primary: #f3f3f3;
+  --popover-foreground: #ffffff;
+  --primary: #ffffff;
   --primary-foreground: #000000;
   --secondary: #1a1a1a;
-  --secondary-foreground: #f3f3f3;
+  --secondary-foreground: #ffffff;
   --muted: #1a1a1a;
-  --muted-foreground: #b3b3b3;
+  --muted-foreground: #999999; /* lighter grey in dark mode */
+  --muted-light: #666666; /* darker grey in dark mode */
   --accent: #1a1a1a;
-  --accent-foreground: #f3f3f3;
+  --accent-foreground: #ffffff;
   --destructive: #ff4d4f;
   --border: #2a2a2a;
   --input: #2a2a2a;
@@ -112,11 +114,11 @@
   --chart-4: #888888;
   --chart-5: #999999;
   --sidebar: #111111;
-  --sidebar-foreground: #f3f3f3;
-  --sidebar-primary: #f3f3f3;
+  --sidebar-foreground: #ffffff;
+  --sidebar-primary: #ffffff;
   --sidebar-primary-foreground: #000000;
   --sidebar-accent: #1a1a1a;
-  --sidebar-accent-foreground: #f3f3f3;
+  --sidebar-accent-foreground: #ffffff;
   --sidebar-border: #2a2a2a;
   --sidebar-ring: #888888;
 }
@@ -128,31 +130,263 @@
   body {
     @apply bg-background text-foreground;
     font-family: Georgia, "Times New Roman", Times, serif;
+    font-size: 18px;
     line-height: 1.5;
+    color: #000000;
   }
   
-  /* Typography - editorial adjustments */
-  h1, h2, h3, h4, h5, h6 { @apply font-serif font-bold; }
-  p { @apply text-base; color: var(--foreground); }
-  small, time, .meta { color: var(--muted-foreground); }
-  a { color: inherit; text-decoration: none; }
-  a:hover { text-decoration: underline; }
+  /* Typography - NYT-style editorial */
+  h1, h2, h3, h4, h5, h6 { 
+    @apply font-serif font-bold; 
+    color: #000000;
+    font-weight: 700;
+  }
   
-  article h1 { @apply text-4xl md:text-5xl lg:text-6xl leading-tight mb-6; }
-  article h2 { @apply text-3xl md:text-4xl leading-tight mb-4; }
-  article p { @apply text-lg leading-relaxed mb-4; }
+  p { 
+    font-size: 18px;
+    line-height: 1.5;
+    color: #000000;
+    margin-bottom: 1em;
+  }
+  
+  small, time, .meta { 
+    font-size: 13px;
+    color: #666666;
+    font-weight: 400;
+  }
+  
+  a { 
+    color: inherit; 
+    text-decoration: none; 
+  }
+  
+  a:hover { 
+    text-decoration: underline; 
+  }
+  
+  /* Article typography */
+  article h1 { 
+    font-size: 36px;
+    line-height: 1.2;
+    margin-bottom: 1em;
+    font-weight: 700;
+  }
+  
+  @media (min-width: 768px) {
+    article h1 {
+      font-size: 42px;
+    }
+  }
+  
+  @media (min-width: 1024px) {
+    article h1 {
+      font-size: 48px;
+    }
+  }
+  
+  article h2 { 
+    font-size: 28px;
+    line-height: 1.3;
+    margin-bottom: 0.75em;
+    font-weight: 700;
+  }
+  
+  @media (min-width: 768px) {
+    article h2 {
+      font-size: 32px;
+    }
+  }
+  
+  article p { 
+    font-size: 18px;
+    line-height: 1.5;
+    margin-bottom: 1em;
+  }
+  
+  /* Dark mode adjustments */
+  .dark body {
+    color: #ffffff;
+  }
+  
+  .dark h1, .dark h2, .dark h3, .dark h4, .dark h5, .dark h6 {
+    color: #ffffff;
+  }
+  
+  .dark p {
+    color: #ffffff;
+  }
+  
+  .dark article h1, .dark article h2 {
+    color: #ffffff;
+  }
+  
+  .dark article p {
+    color: #ffffff;
+  }
 }
 
 .font-serif {
-  font-family: 'Merriweather', Georgia, serif;
+  font-family: 'Merriweather', Georgia, "Times New Roman", Times, serif;
+  font-weight: 700;
 }
 
-/* Editorial containers */
-.content-container { max-width: 1100px; margin-left: auto; margin-right: auto; }
-.article-container { max-width: 720px; margin-left: auto; margin-right: auto; }
+/* Editorial containers - NYT-style narrow widths */
+.content-container { 
+  max-width: 1200px; 
+  margin-left: auto; 
+  margin-right: auto; 
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 768px) {
+  .content-container {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+
+.article-container { 
+  max-width: 900px; 
+  margin-left: auto; 
+  margin-right: auto; 
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 768px) {
+  .article-container {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
 
 /* Subtle separators */
-.divider { height: 1px; background: var(--border); }
+.divider { 
+  height: 1px; 
+  background: var(--border); 
+  margin: 1.5rem 0;
+}
 
-/* Image frame - square corners */
-.image-frame { border-radius: 0; overflow: hidden; }
+/* Image frame - square corners, NYT-style */
+.image-frame { 
+  border-radius: 0; 
+  overflow: hidden; 
+}
+
+/* Consistent spacing */
+.spacing-section {
+  margin-top: 3rem;
+  margin-bottom: 3rem;
+}
+
+@media (min-width: 768px) {
+  .spacing-section {
+    margin-top: 4rem;
+    margin-bottom: 4rem;
+  }
+}
+
+/* Article content styling - NYT style */
+.article-content {
+  font-family: Georgia, "Times New Roman", Times, serif;
+  font-size: 18px;
+  line-height: 1.5;
+  color: #000000;
+}
+
+.article-content p {
+  margin-bottom: 1.5em;
+  font-size: 18px;
+  line-height: 1.5;
+}
+
+.article-content h2 {
+  font-size: 28px;
+  line-height: 1.3;
+  margin-top: 2em;
+  margin-bottom: 1em;
+  font-weight: 700;
+}
+
+.article-content h3 {
+  font-size: 24px;
+  line-height: 1.3;
+  margin-top: 1.5em;
+  margin-bottom: 0.75em;
+  font-weight: 700;
+}
+
+.article-content a {
+  color: #000000;
+  text-decoration: underline;
+}
+
+.article-content a:hover {
+  text-decoration: none;
+}
+
+.article-content img {
+  max-width: 100%;
+  height: auto;
+  margin: 2em 0;
+}
+
+.article-content ul,
+.article-content ol {
+  margin: 1.5em 0;
+  padding-left: 2em;
+}
+
+.article-content li {
+  margin-bottom: 0.5em;
+}
+
+.article-content blockquote {
+  border-left: 4px solid #e6e6e6;
+  padding-left: 1.5em;
+  margin: 2em 0;
+  font-style: italic;
+  color: #666666;
+}
+
+.article-content code {
+  background-color: #f5f5f5;
+  padding: 0.2em 0.4em;
+  border-radius: 2px;
+  font-size: 0.9em;
+}
+
+.article-content pre {
+  background-color: #f5f5f5;
+  padding: 1.5em;
+  overflow-x: auto;
+  margin: 2em 0;
+}
+
+.article-content pre code {
+  background-color: transparent;
+  padding: 0;
+}
+
+/* Dark mode article content */
+.dark .article-content {
+  color: #ffffff;
+}
+
+.dark .article-content a {
+  color: #ffffff;
+}
+
+.dark .article-content blockquote {
+  border-left-color: #2a2a2a;
+  color: #999999;
+}
+
+.dark .article-content code {
+  background-color: #1a1a1a;
+}
+
+.dark .article-content pre {
+  background-color: #1a1a1a;
+}
