@@ -33,11 +33,23 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     }
   }
 
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
   return {
     title: category.name,
     description: category.description || `Latest ${category.name} articles and news`,
     alternates: {
       canonical: `/category/${slug}`,
+    },
+    openGraph: {
+      type: 'website',
+      url: `${baseUrl}/category/${slug}`,
+      title: category.name,
+      description: category.description || `Latest ${category.name} articles and news`,
+    },
+    twitter: {
+      card: 'summary',
+      title: category.name,
+      description: category.description || `Latest ${category.name} articles and news`,
     },
   }
 }

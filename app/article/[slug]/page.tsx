@@ -39,6 +39,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return { title: 'Article Not Found' }
   }
 
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+  const absoluteImage = article.featuredImage && !article.featuredImage.startsWith('http')
+    ? `${baseUrl}${article.featuredImage.startsWith('/') ? '' : '/'}${article.featuredImage}`
+    : article.featuredImage || undefined
+
   return {
     title: article.metaTitle || article.title,
     description: article.metaDescription || article.excerpt || '',
@@ -49,16 +54,17 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       title: article.metaTitle || article.title,
       description: article.metaDescription || article.excerpt || '',
       type: 'article',
+      url: `${baseUrl}/article/${slug}`,
       publishedTime: article.publishedAt?.toISOString(),
       modifiedTime: article.updatedAt.toISOString(),
       authors: [article.editor.name],
-      images: article.featuredImage ? [{ url: article.featuredImage, width: 1200, height: 630, alt: article.title }] : [],
+      images: absoluteImage ? [{ url: absoluteImage, width: 1200, height: 630, alt: article.title }] : [],
     },
     twitter: {
       card: 'summary_large_image',
       title: article.metaTitle || article.title,
       description: article.metaDescription || article.excerpt || '',
-      images: article.featuredImage ? [article.featuredImage] : [],
+      images: absoluteImage ? [absoluteImage] : [],
     },
   }
 }
@@ -117,6 +123,37 @@ export default async function ArticlePage({ params }: PageProps) {
             },
             description: article.excerpt || '',
             articleBody: article.content,
+          }),
+        }}
+      />
+
+      {/* Breadcrumbs JSON-LD */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+              {
+                '@type': 'ListItem',
+                position: 1,
+                name: 'Home',
+                item: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}`,
+              },
+              {
+                '@type': 'ListItem',
+                position: 2,
+                name: article.category.name,
+                item: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/category/${article.category.slug}`,
+              },
+              {
+                '@type': 'ListItem',
+                position: 3,
+                name: article.title,
+                item: `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/article/${article.slug}`,
+              },
+            ],
           }),
         }}
       />
