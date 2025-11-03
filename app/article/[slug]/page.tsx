@@ -4,6 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import type { Metadata } from 'next'
+import ShareButtons from '@/components/share-buttons'
 
 interface PageProps {
   params: Promise<{
@@ -35,9 +36,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   })
 
   if (!article) {
-    return {
-      title: 'Article Not Found',
-    }
+    return { title: 'Article Not Found' }
   }
 
   return {
@@ -45,9 +44,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     description: article.metaDescription || article.excerpt || '',
     keywords: [article.category.name, 'AI', 'Technology', 'News'],
     authors: [{ name: article.editor.name }],
-    alternates: {
-      canonical: `/article/${slug}`,
-    },
+    alternates: { canonical: `/article/${slug}` },
     openGraph: {
       title: article.metaTitle || article.title,
       description: article.metaDescription || article.excerpt || '',
@@ -55,16 +52,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       publishedTime: article.publishedAt?.toISOString(),
       modifiedTime: article.updatedAt.toISOString(),
       authors: [article.editor.name],
-      images: article.featuredImage
-        ? [
-            {
-              url: article.featuredImage,
-              width: 1200,
-              height: 630,
-              alt: article.title,
-            },
-          ]
-        : [],
+      images: article.featuredImage ? [{ url: article.featuredImage, width: 1200, height: 630, alt: article.title }] : [],
     },
     twitter: {
       card: 'summary_large_image',
@@ -95,28 +83,18 @@ export default async function ArticlePage({ params }: PageProps) {
 
   // Increment views (non-blocking)
   prisma.article
-    .update({
-      where: { id: article.id },
-      data: { views: { increment: 1 } },
-    })
+    .update({ where: { id: article.id }, data: { views: { increment: 1 } } })
     .catch(console.error)
 
   // Fetch related articles from same category
   const relatedArticles = await prisma.article.findMany({
-    where: {
-      published: true,
-      categoryId: article.categoryId,
-      NOT: {
-        id: article.id,
-      },
-    },
+    where: { published: true, categoryId: article.categoryId, NOT: { id: article.id } },
     take: 3,
     orderBy: { publishedAt: 'desc' },
-    include: {
-      category: true,
-      editor: true,
-    },
+    include: { category: true, editor: true },
   })
+
+  const canonicalUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/article/${article.slug}`
 
   return (
     <>
@@ -131,17 +109,11 @@ export default async function ArticlePage({ params }: PageProps) {
             image: article.featuredImage || '',
             datePublished: article.publishedAt?.toISOString(),
             dateModified: article.updatedAt.toISOString(),
-            author: {
-              '@type': 'Person',
-              name: article.editor.name,
-            },
+            author: { '@type': 'Person', name: article.editor.name },
             publisher: {
               '@type': 'Organization',
-              name: 'AI Tech News',
-              logo: {
-                '@type': 'ImageObject',
-                url: `${process.env.NEXT_PUBLIC_SITE_URL}/logo.png`,
-              },
+              name: 'Port',
+              logo: { '@type': 'ImageObject', url: `${process.env.NEXT_PUBLIC_SITE_URL}/logo.png` },
             },
             description: article.excerpt || '',
             articleBody: article.content,
@@ -150,104 +122,80 @@ export default async function ArticlePage({ params }: PageProps) {
       />
 
       <article className="bg-white">
-        <div className="container mx-auto px-4 py-8 max-w-4xl">
-          {/* Article Meta */}
-          <div className="text-center mb-8">
-            <div className="text-sm text-muted-foreground mb-4">
-              Published on {article.publishedAt && format(article.publishedAt, 'MMMM d, yyyy')}
-              {' · '}By{' '}
-              <span className="font-medium text-foreground italic">{article.editor.name}</span>
-              {' · '}In{' '}
-              <Link
-                href={`/category/${article.category.slug}`}
-                className="font-medium text-primary hover:underline"
-              >
-                {article.category.name}
-              </Link>
-            </div>
-
-            {/* Article Title */}
-            <h1 className="font-serif font-bold text-4xl md:text-5xl lg:text-6xl leading-tight mb-6">
-              {article.title}
-            </h1>
-
-            {/* Excerpt */}
-            {article.excerpt && (
-              <p className="text-xl text-muted-foreground leading-relaxed">
-                {article.excerpt}
-              </p>
-            )}
-          </div>
-
-          {/* Featured Image */}
+        <div className="article-container px-4 py-8">
+          {/* Featured Image first */}
           {article.featuredImage && (
-            <div className="relative w-full h-[400px] md:h-[600px] mb-12 rounded-lg overflow-hidden">
+            <div className="relative w-full h-[400px] md:h-[560px] mb-8 image-frame">
               <Image
                 src={article.featuredImage}
                 alt={article.title}
                 fill
                 priority
                 className="object-cover"
-                sizes="(max-width: 768px) 100vw, 896px"
+                sizes="(max-width: 768px) 100vw, 720px"
               />
-              <div className="absolute top-4 left-4">
-                <div className="bg-black text-white px-2 py-1 text-xs font-black">
-                  AI TECH
-                </div>
-              </div>
             </div>
           )}
 
-          {/* Article Content */}
-          <div
-            className="prose prose-lg max-w-none"
-            dangerouslySetInnerHTML={{ __html: article.content }}
-          />
+          {/* Title */}
+          <h1 className="font-serif font-bold text-4xl md:text-5xl lg:text-6xl leading-tight mb-4">
+            {article.title}
+          </h1>
 
-          {/* Author Bio */}
+          {/* Subheading */}
+          {article.excerpt && (
+            <p className="text-xl text-[var(--muted-foreground)] leading-relaxed mb-4">
+              {article.excerpt}
+            </p>
+          )}
+
+          {/* Byline / Meta */}
+          <div className="text-sm text-[var(--muted-foreground)] mb-6">
+            {article.publishedAt && format(article.publishedAt, 'MMMM d, yyyy')}
+            {' · '}By <span className="italic">{article.editor.name}</span>
+            {' · '}In{' '}
+            <Link href={`/category/${article.category.slug}`} className="hover:underline">
+              {article.category.name}
+            </Link>
+            {' · '}{article.views} views
+          </div>
+
+          {/* Share */}
+          <div className="mb-8">
+            <ShareButtons url={canonicalUrl} title={article.title} />
+          </div>
+
+          {/* Article Content */}
+          <div className="prose prose-lg max-w-none" dangerouslySetInnerHTML={{ __html: article.content }} />
+
+          {/* Author */}
           <div className="mt-12 pt-8 border-t border-border">
-            <div className="flex items-start gap-4">
-              {article.editor.avatar && (
-                <div className="relative w-16 h-16 rounded-full overflow-hidden flex-shrink-0">
-                  <Image
-                    src={article.editor.avatar}
-                    alt={article.editor.name}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-              )}
-              <div>
-                <h3 className="font-bold text-xl mb-2">{article.editor.name}</h3>
-                {article.editor.bio && (
-                  <p className="text-muted-foreground">{article.editor.bio}</p>
-                )}
-              </div>
-            </div>
+            <div className="text-sm text-[var(--muted-foreground)]">Written by</div>
+            <div className="text-lg">{article.editor.name}</div>
           </div>
         </div>
 
         {/* Related Articles */}
         {relatedArticles.length > 0 && (
-          <div className="bg-gray-50 py-12">
-            <div className="container mx-auto px-4">
-              <h2 className="text-3xl font-bold mb-8">Related Articles</h2>
+          <div className="border-top border-border bg-white py-10">
+            <div className="content-container px-4">
+              <h2 className="text-[13px] tracking-wide uppercase text-[var(--muted-foreground)] mb-6">Related Articles</h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {relatedArticles.map((relatedArticle) => (
                   <article key={relatedArticle.id} className="group">
                     <Link href={`/article/${relatedArticle.slug}`}>
                       {relatedArticle.featuredImage && (
-                        <div className="relative w-full h-[200px] overflow-hidden rounded-lg mb-4">
+                        <div className="relative w-full h-[200px] overflow-hidden image-frame mb-3">
                           <Image
                             src={relatedArticle.featuredImage}
                             alt={relatedArticle.title}
                             fill
-                            className="object-cover group-hover:scale-105 transition-transform duration-300"
+                            className="object-cover"
                             sizes="(max-width: 768px) 100vw, 33vw"
                           />
                         </div>
                       )}
-                      <h3 className="font-serif font-bold text-xl leading-tight group-hover:text-primary transition-colors">
+                      <h3 className="font-serif font-bold text-xl leading-tight group-hover:underline">
                         {relatedArticle.title}
                       </h3>
                     </Link>
