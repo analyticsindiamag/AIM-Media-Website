@@ -29,6 +29,7 @@ export default function EditArticlePage() {
     categoryId: '',
     editorId: '',
     published: false,
+    scheduledAt: '',
     metaTitle: '',
     metaDescription: '',
     featured: false,
@@ -46,6 +47,12 @@ export default function EditArticlePage() {
         const article = await articleRes.json()
         setCategories(await catsRes.json())
         setEditors(await edsRes.json())
+        
+        // Format scheduledAt for datetime-local input
+        const scheduledAtValue = article.scheduledAt 
+          ? new Date(article.scheduledAt).toISOString().slice(0, 16)
+          : ''
+        
         setFormData({
           title: article.title || '',
           slug: article.slug || '',
@@ -55,6 +62,7 @@ export default function EditArticlePage() {
           categoryId: article.categoryId,
           editorId: article.editorId,
           published: !!article.published,
+          scheduledAt: scheduledAtValue,
           metaTitle: article.metaTitle || '',
           metaDescription: article.metaDescription || '',
           featured: !!article.featured,
@@ -158,6 +166,37 @@ export default function EditArticlePage() {
           <RichTextEditor content={formData.content} onChange={(html) => setFormData({ ...formData, content: html })} />
         </div>
         <div className="border-t pt-6">
+          <h2 className="text-xl font-bold mb-4">Publishing Options</h2>
+          
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <input
+                id="published"
+                type="checkbox"
+                checked={formData.published}
+                onChange={(e) => setFormData({ ...formData, published: e.target.checked })}
+              />
+              <Label htmlFor="published">Publish immediately</Label>
+            </div>
+
+            <div>
+              <Label htmlFor="scheduledAt">Schedule for later (leave empty to publish now)</Label>
+              <Input
+                id="scheduledAt"
+                type="datetime-local"
+                value={formData.scheduledAt}
+                onChange={(e) => setFormData({ ...formData, scheduledAt: e.target.value })}
+                placeholder="Schedule publication date"
+              />
+              {formData.scheduledAt && (
+                <p className="text-sm text-gray-500 mt-1">
+                  Article will be published on {new Date(formData.scheduledAt).toLocaleString()}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+        <div className="border-t pt-6">
           <h2 className="text-xl font-bold mb-4">SEO Settings</h2>
           <div className="space-y-4">
             <div>
@@ -177,7 +216,11 @@ export default function EditArticlePage() {
         <div className="flex gap-4 pt-6 border-t">
           <Button type="button" variant="outline" onClick={() => router.back()} disabled={saving}>Cancel</Button>
           <Button type="button" variant="outline" onClick={() => save(false)} disabled={saving}>Save as Draft</Button>
-          <Button type="button" onClick={() => save(true)} disabled={saving}>{saving ? 'Saving...' : 'Publish'}</Button>
+          <Button type="button" onClick={() => save(!formData.scheduledAt)} disabled={saving}>
+            {saving 
+              ? (formData.scheduledAt ? 'Scheduling...' : 'Publishing...') 
+              : (formData.scheduledAt ? 'Schedule' : 'Publish')}
+          </Button>
         </div>
       </div>
     </div>

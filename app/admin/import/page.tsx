@@ -54,16 +54,31 @@ export default function ImportPage() {
       <div className="bg-white p-6 rounded-lg shadow">
         <h2 className="text-xl font-bold mb-4">CSV Format</h2>
         <div className="bg-gray-50 p-4 rounded mb-6">
-          <p className="text-sm font-mono mb-2">Expected columns:</p>
+          <p className="text-sm mb-3">
+            <strong>Required columns:</strong> <code className="bg-gray-200 px-1 rounded">title</code> (or <code className="bg-gray-200 px-1 rounded">post_title</code>), <code className="bg-gray-200 px-1 rounded">content</code> (or <code className="bg-gray-200 px-1 rounded">post_content</code>)
+          </p>
+          <p className="text-sm font-mono mb-2">Optional columns:</p>
           <ul className="text-sm font-mono space-y-1 text-muted-foreground">
-            <li>• post_title</li>
-            <li>• post_content</li>
-            <li>• post_excerpt</li>
-            <li>• post_author</li>
-            <li>• category</li>
-            <li>• post_date</li>
-            <li>• featured_image_url</li>
+            <li>• excerpt / post_excerpt</li>
+            <li>• slug</li>
+            <li>• category / categories</li>
+            <li>• author first name, author last name</li>
+            <li>• author email (recommended for editor matching)</li>
+            <li>• author username / post_author</li>
+            <li>• status (publish/draft)</li>
+            <li>• date / post_date</li>
+            <li>• featured_image_url / image url</li>
+            <li>• meta_title, meta_description</li>
           </ul>
+          <div className="mt-4 pt-4 border-t border-gray-300">
+            <p className="text-sm mb-2"><strong>Important:</strong></p>
+            <ul className="text-xs space-y-1 text-muted-foreground">
+              <li>• Categories and editors are automatically created if they don't exist</li>
+              <li>• If an article with the same slug exists, it will be updated (not duplicated)</li>
+              <li>• Editor matching prioritizes email, then name</li>
+              <li>• Download the CSV template: <a href="/import-template.csv" download className="text-blue-600 hover:underline">import-template.csv</a></li>
+            </ul>
+          </div>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">

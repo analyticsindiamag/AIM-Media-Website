@@ -21,10 +21,25 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { name, email, bio, avatar } = body
 
+    // Generate slug from name
+    const slug = name
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '')
+
+    // Ensure unique slug
+    let uniqueSlug = slug
+    let counter = 1
+    while (await prisma.editor.findUnique({ where: { slug: uniqueSlug } })) {
+      uniqueSlug = `${slug}-${counter}`
+      counter++
+    }
+
     const editor = await prisma.editor.create({
       data: {
         name,
         email,
+        slug: uniqueSlug,
         bio,
         avatar,
       },

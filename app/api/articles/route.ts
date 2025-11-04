@@ -32,6 +32,7 @@ export async function POST(request: NextRequest) {
       categoryId,
       editorId,
       published,
+      scheduledAt,
       metaTitle,
       metaDescription,
       featured,
@@ -61,6 +62,10 @@ export async function POST(request: NextRequest) {
       await prisma.article.updateMany({ data: { featured: false }, where: { featured: true } })
     }
 
+    // Handle scheduling: if scheduledAt is provided, don't auto-publish
+    const scheduledDate = scheduledAt ? new Date(scheduledAt) : null
+    const shouldPublish = published && !scheduledDate
+    
     const article = await prisma.article.create({
       data: {
         title,
@@ -70,8 +75,9 @@ export async function POST(request: NextRequest) {
         featuredImage,
         categoryId,
         editorId,
-        published,
-        publishedAt: published ? new Date() : null,
+        published: shouldPublish,
+        publishedAt: shouldPublish ? new Date() : null,
+        scheduledAt: scheduledDate,
         readTime,
         metaTitle,
         metaDescription,

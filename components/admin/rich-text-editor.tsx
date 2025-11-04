@@ -48,6 +48,7 @@ export function RichTextEditor({ content, onChange }: RichTextEditorProps) {
           'prose prose-lg max-w-none focus:outline-none min-h-[400px] p-4',
       },
     },
+    immediatelyRender: false,
   })
 
   if (!editor) {

@@ -1,7 +1,10 @@
 import { prisma } from '@/lib/prisma'
 import { notFound } from 'next/navigation'
-import { ArticleCard } from '@/components/article-card'
+import Image from 'next/image'
+import Link from 'next/link'
 import type { Metadata } from 'next'
+import { format } from 'date-fns'
+import { MessageCircle, Clock } from 'lucide-react'
 
 interface PageProps {
   params: Promise<{
@@ -85,39 +88,111 @@ export default async function CategoryPage({ params }: PageProps) {
   }
 
   return (
-    <div className="bg-white dark:bg-[#0a0a0a] min-h-screen">
-      <div className="content-container py-8 md:py-12">
-        {/* Category Header */}
-        <div className="mb-12 pb-8 border-b border-border">
-          <h1 className="font-serif font-bold text-4xl md:text-5xl lg:text-6xl leading-tight mb-4 text-black dark:text-white uppercase tracking-tight">
+    <div className="bg-white min-h-screen">
+      <div className="wsj-container py-8 md:py-12">
+        {/* Category Header - WSJ Style */}
+        <div className="mb-8 pb-6 border-b border-[var(--wsj-border-light)]">
+          {/* Sub-heading */}
+          <div className="text-[var(--wsj-font-size-sm)] text-[var(--wsj-text-medium-gray)] mb-2 font-sans uppercase">
+            {category.name.split(' ')[0]}
+          </div>
+          
+          {/* Main Title */}
+          <h1 className="font-serif font-bold text-[var(--wsj-font-size-5xl)] md:text-[var(--wsj-font-size-6xl)] leading-[var(--wsj-line-height-tight)] text-[var(--wsj-text-black)]">
             {category.name}
           </h1>
+          
           {category.description && (
-            <p className="text-xl text-[#666666] dark:text-[#999999]">{category.description}</p>
+            <p className="text-[var(--wsj-font-size-md)] text-[var(--wsj-text-medium-gray)] mt-4 font-sans">
+              {category.description}
+            </p>
           )}
         </div>
 
-        {/* Articles Grid */}
-        {articles.length > 0 ? (
-          <div className="space-y-8">
-            {articles.map((article) => (
-              <ArticleCard
-                key={article.id}
-                article={article}
-                size="medium"
-                showExcerpt={true}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-20">
-            <p className="text-[#666666] dark:text-[#999999] text-lg">
-              No articles found in this category yet.
-            </p>
-          </div>
-        )}
+        {/* Latest News Section */}
+        <div className="mb-8">
+          <h2 className="text-[var(--wsj-font-size-base)] font-bold text-[var(--wsj-text-black)] mb-6 font-sans">
+            Latest News
+          </h2>
+          
+          {/* Articles List */}
+          {articles.length > 0 ? (
+            <div className="space-y-8">
+              {articles.map((article) => (
+                <article key={article.id} className="group">
+                  <Link href={`/article/${article.slug}`} className="flex flex-col md:flex-row gap-4 md:gap-6">
+                    {/* Article Image */}
+                    {article.featuredImage && (
+                      <div className="relative w-full md:w-[200px] h-[200px] md:h-[150px] flex-shrink-0 overflow-hidden">
+                        <Image
+                          src={article.featuredImage}
+                          alt={article.title}
+                          fill
+                          loading="lazy"
+                          className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                          sizes="(max-width: 768px) 100vw, 200px"
+                        />
+                      </div>
+                    )}
+                    
+                    {/* Article Content */}
+                    <div className="flex-1">
+                      {/* Title */}
+                      <h3 className="font-serif font-bold text-[var(--wsj-font-size-2xl)] md:text-[var(--wsj-font-size-3xl)] leading-[var(--wsj-line-height-normal)] text-[var(--wsj-text-black)] group-hover:underline mb-2">
+                        {article.title}
+                      </h3>
+                      
+                      {/* Excerpt */}
+                      {article.excerpt && (
+                        <p className="text-[var(--wsj-font-size-md)] text-[var(--wsj-text-dark-gray)] mb-3 font-serif leading-[var(--wsj-line-height-loose)] line-clamp-2">
+                          {article.excerpt}
+                        </p>
+                      )}
+                      
+                      {/* Author and Metadata */}
+                      <div className="flex items-center gap-4 text-[var(--wsj-font-size-sm)] text-[var(--wsj-text-medium-gray)] font-sans">
+                        <Link href={`/editor/${article.editor.slug}`} className="text-[var(--wsj-blue-primary)] hover:underline">
+                          By {article.editor.name}
+                        </Link>
+                        {article.publishedAt && (
+                          <>
+                            <span className="text-[var(--wsj-border-light)]">·</span>
+                            <span>{format(article.publishedAt, 'MMMM d, yyyy')}</span>
+                          </>
+                        )}
+                        {article.readTime && (
+                          <>
+                            <span className="text-[var(--wsj-border-light)]">·</span>
+                            <div className="flex items-center gap-1">
+                              <Clock className="w-3 h-3" />
+                              <span>{article.readTime} min read</span>
+                            </div>
+                          </>
+                        )}
+                        <span className="text-[var(--wsj-border-light)]">·</span>
+                        <div className="flex items-center gap-1">
+                          <MessageCircle className="w-3 h-3" />
+                          <span>0</span>
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                  
+                  {article.id !== articles[articles.length - 1]?.id && (
+                    <div className="mt-8 pt-8 border-t border-[var(--wsj-border-light)]" />
+                  )}
+                </article>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-20">
+              <p className="text-[var(--wsj-text-medium-gray)] text-lg font-sans">
+                No articles found in this category yet.
+              </p>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )
 }
-

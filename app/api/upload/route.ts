@@ -30,7 +30,7 @@ export async function POST(request: NextRequest) {
     if (error) {
       console.error('Supabase upload error:', error)
       return NextResponse.json(
-        { error: 'Failed to upload file' },
+        { error: error.message || 'Failed to upload file to storage' },
         { status: 500 }
       )
     }
@@ -43,8 +43,9 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ url: publicUrl })
   } catch (error) {
     console.error('Upload error:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Internal server error'
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: errorMessage },
       { status: 500 }
     )
   }

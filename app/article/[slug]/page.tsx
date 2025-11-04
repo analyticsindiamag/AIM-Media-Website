@@ -4,7 +4,8 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import type { Metadata } from 'next'
-import ShareButtons from '@/components/share-buttons'
+import { Share2, Type, MessageCircle, Headphones, MoreVertical } from 'lucide-react'
+import { ShareButtons } from '@/components/share-buttons'
 
 interface PageProps {
   params: Promise<{
@@ -100,8 +101,6 @@ export default async function ArticlePage({ params }: PageProps) {
     include: { category: true, editor: true },
   })
 
-  const canonicalUrl = `${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/article/${article.slug}`
-
   return (
     <>
       {/* Schema.org JSON-LD for NewsArticle */}
@@ -118,7 +117,7 @@ export default async function ArticlePage({ params }: PageProps) {
             author: { '@type': 'Person', name: article.editor.name },
             publisher: {
               '@type': 'Organization',
-              name: 'Port',
+              name: 'AI Tech News',
               logo: { '@type': 'ImageObject', url: `${process.env.NEXT_PUBLIC_SITE_URL}/logo.png` },
             },
             description: article.excerpt || '',
@@ -158,83 +157,159 @@ export default async function ArticlePage({ params }: PageProps) {
         }}
       />
 
-      <article className="bg-white dark:bg-[#0a0a0a]">
-        <div className="article-container py-8 md:py-12">
-          {/* Hero Image */}
-          {article.featuredImage && (
-            <div className="relative w-full h-[400px] md:h-[500px] lg:h-[600px] mb-8 md:mb-12 image-frame">
-              <Image
-                src={article.featuredImage}
-                alt={article.title}
-                fill
-                priority
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, 900px"
-              />
+      <article className="bg-white">
+        {/* Hero Section with Image Overlay - WSJ Style */}
+        {article.featuredImage && (
+          <div className="wsj-hero">
+            <Image
+              src={article.featuredImage}
+              alt={article.title}
+              fill
+              priority
+              className="object-cover"
+              sizes="100vw"
+            />
+            <div className="wsj-hero-overlay"></div>
+            <div className="wsj-hero-content">
+              <h1 className="wsj-hero-title">
+                {article.title}
+              </h1>
+              {article.excerpt && (
+                <p className="wsj-hero-subtitle">
+                  {article.excerpt}
+                </p>
+              )}
+              {/* Interactive Bar */}
+              <div className="wsj-interactive-bar">
+                <ShareButtons 
+                  url={`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/article/${article.slug}`}
+                  title={article.title}
+                  compact={true}
+                  variant="light"
+                />
+                <button className="flex items-center gap-1">
+                  <Type className="w-4 h-4" />
+                  <span>Resize</span>
+                </button>
+                <button className="flex items-center gap-1">
+                  <MessageCircle className="w-4 h-4" />
+                  <span>0</span>
+                </button>
+                <div className="border-l border-white/30 h-4 mx-2"></div>
+                <button className="flex items-center gap-1">
+                  <Headphones className="w-4 h-4" />
+                  <span>Listen ({article.readTime} min)</span>
+                </button>
+                <button>
+                  <MoreVertical className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Article Content */}
+        <div className="article-container py-6 md:py-8">
+          {/* Article Header Bar - WSJ Style (only if no hero image) */}
+          {!article.featuredImage && (
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-[var(--wsj-border-light)]">
+              <div className="flex items-center gap-4 text-[var(--wsj-font-size-sm)] font-sans flex-wrap">
+                <ShareButtons 
+                  url={`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/article/${article.slug}`}
+                  title={article.title}
+                  compact={true}
+                />
+                <button className="flex items-center gap-1 text-[var(--wsj-text-black)] hover:text-[var(--wsj-text-medium-gray)] transition-colors">
+                  <Type className="w-4 h-4" />
+                  <span>AA Resize</span>
+                </button>
+                <button className="flex items-center gap-1 text-[var(--wsj-text-black)] hover:text-[var(--wsj-text-medium-gray)] transition-colors">
+                  <MessageCircle className="w-4 h-4" />
+                  <span>0</span>
+                </button>
+                <button className="flex items-center gap-1 text-[var(--wsj-text-black)] hover:text-[var(--wsj-text-medium-gray)] transition-colors">
+                  <Headphones className="w-4 h-4" />
+                  <span>Listen ({article.readTime} min)</span>
+                </button>
+                <button className="text-[var(--wsj-text-black)] hover:text-[var(--wsj-text-medium-gray)] transition-colors">
+                  <MoreVertical className="w-4 h-4" />
+                </button>
+              </div>
             </div>
           )}
 
-          {/* Title */}
-          <h1 className="font-serif font-bold text-4xl md:text-5xl lg:text-6xl leading-tight mb-6 text-black dark:text-white">
-            {article.title}
-          </h1>
+          {/* Title - WSJ Style Large Serif (only if no hero image) */}
+          {!article.featuredImage && (
+            <>
+              <h1 className="font-serif font-bold text-[var(--wsj-font-size-6xl)] md:text-[var(--wsj-font-size-7xl)] leading-[var(--wsj-line-height-tight)] mb-4 text-[var(--wsj-text-black)] max-w-[680px]">
+                {article.title}
+              </h1>
 
-          {/* Subheading */}
-          {article.excerpt && (
-            <p className="text-xl md:text-2xl text-[#666666] dark:text-[#999999] leading-relaxed mb-6 font-normal">
-              {article.excerpt}
+              {/* Subtitle/Lead Paragraph - WSJ Style */}
+              {article.excerpt && (
+                <p className="text-[var(--wsj-font-size-lg)] md:text-[var(--wsj-font-size-xl)] text-[var(--wsj-text-black)] leading-[var(--wsj-line-height-loose)] mb-6 font-serif max-w-[680px]">
+                  {article.excerpt}
+                </p>
+              )}
+            </>
+          )}
+
+          {/* Caption for hero image */}
+          {article.featuredImage && (
+            <p className="text-[var(--wsj-font-size-sm)] text-[var(--wsj-text-medium-gray)] italic font-serif mb-2 mt-4">
+              {article.category.name}
             </p>
           )}
 
-          {/* Byline / Meta - NYT Style */}
-          <div className="text-sm text-[#666666] dark:text-[#999999] mb-8 pb-8 border-b border-border">
-            {article.publishedAt && format(article.publishedAt, 'MMMM d, yyyy')}
-            {' · '}
-            By <span className="italic">{article.editor.name}</span>
-            {' · '}
-            In{' '}
-            <Link 
-              href={`/category/${article.category.slug}`} 
-              className="hover:underline text-black dark:text-white"
-            >
-              {article.category.name}
-            </Link>
+          {/* Author and Date - WSJ Style */}
+          <div className="mb-6 pb-4 border-b border-[var(--wsj-border-light)]">
+            <div className="mb-2">
+              <p className="text-[var(--wsj-font-size-base)] text-[var(--wsj-text-black)] font-sans leading-[var(--wsj-line-height-loose)]">
+                By <Link href={`/editor/${article.editor.slug}`} className="font-medium hover:underline">{article.editor.name}</Link>
+                {article.editor.bio && ` | ${article.editor.bio.split('.')[0]}`}
+              </p>
+            </div>
+            <div className="text-[var(--wsj-font-size-sm)] text-[var(--wsj-text-medium-gray)] font-sans">
+              {article.publishedAt && format(article.publishedAt, 'MMM. d, yyyy')} {article.publishedAt && format(article.publishedAt, 'h:mm a')} ET
+            </div>
           </div>
 
-          {/* Share Buttons */}
-          <div className="mb-8">
-            <ShareButtons url={canonicalUrl} title={article.title} />
-          </div>
-
-          {/* Article Content - NYT Style Body */}
+          {/* Article Content - WSJ Style Body */}
           <div 
-            className="prose prose-lg max-w-none article-content"
+            className="article-content max-w-[680px]"
             dangerouslySetInnerHTML={{ __html: article.content }}
           />
 
-          {/* Author Bio */}
-          <div className="mt-12 pt-8 border-t border-border">
-            <div className="text-sm text-[#666666] dark:text-[#999999] mb-2">Written by</div>
-            <div className="text-lg font-serif font-bold text-black dark:text-white">{article.editor.name}</div>
+          {/* Author Bio Section */}
+          <div className="mt-12 pt-8 border-t border-[var(--wsj-border-light)] max-w-[680px]">
+            <div className="text-[var(--wsj-font-size-sm)] text-[var(--wsj-text-medium-gray)] mb-2 font-sans">Written by</div>
+            <Link 
+              href={`/editor/${article.editor.slug}`}
+              className="text-[var(--wsj-font-size-base)] font-serif font-bold text-[var(--wsj-text-black)] hover:underline"
+            >
+              {article.editor.name}
+            </Link>
             {article.editor.bio && (
-              <div className="text-base text-[#666666] dark:text-[#999999] mt-2">{article.editor.bio}</div>
+              <div className="text-[var(--wsj-font-size-sm)] text-[var(--wsj-text-medium-gray)] mt-2 font-sans leading-[var(--wsj-line-height-loose)]">
+                {article.editor.bio}
+              </div>
             )}
           </div>
         </div>
 
         {/* Related Articles */}
         {relatedArticles.length > 0 && (
-          <div className="border-t border-border bg-white dark:bg-[#0a0a0a] py-10 md:py-12">
-            <div className="content-container">
-              <h2 className="text-[13px] tracking-wide uppercase text-[#666666] dark:text-[#999999] mb-8 font-bold">
-                Related Articles
+          <div className="border-t border-[var(--wsj-border-light)] bg-white py-10 md:py-12">
+            <div className="wsj-container">
+              <h2 className="text-[var(--wsj-font-size-sm)] tracking-wide uppercase text-[var(--wsj-text-medium-gray)] mb-8 font-sans font-bold">
+                More From {article.category.name}
               </h2>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {relatedArticles.map((relatedArticle) => (
                   <article key={relatedArticle.id} className="group">
                     <Link href={`/article/${relatedArticle.slug}`}>
                       {relatedArticle.featuredImage && (
-                        <div className="relative w-full h-[200px] md:h-[240px] overflow-hidden image-frame mb-4">
+                        <div className="relative w-full h-[200px] md:h-[240px] overflow-hidden mb-4">
                           <Image
                             src={relatedArticle.featuredImage}
                             alt={relatedArticle.title}
@@ -245,13 +320,15 @@ export default async function ArticlePage({ params }: PageProps) {
                           />
                         </div>
                       )}
-                      <h3 className="font-serif font-bold text-xl md:text-2xl leading-tight text-black dark:text-white group-hover:underline mb-2">
+                      <h3 className="font-serif font-bold text-xl md:text-2xl leading-tight text-[var(--wsj-text-black)] group-hover:underline mb-2">
                         {relatedArticle.title}
                       </h3>
-                      <div className="text-[13px] text-[#666666] dark:text-[#999999]">
+                      <div className="text-[var(--wsj-font-size-sm)] text-[var(--wsj-text-medium-gray)] font-sans">
                         {relatedArticle.publishedAt && format(relatedArticle.publishedAt, 'MMM d, yyyy')}
                         {relatedArticle.publishedAt && ' · '}
-                        {relatedArticle.editor.name}
+                        <Link href={`/editor/${relatedArticle.editor.slug}`} className="hover:underline">
+                          {relatedArticle.editor.name}
+                        </Link>
                       </div>
                     </Link>
                   </article>
@@ -264,4 +341,3 @@ export default async function ArticlePage({ params }: PageProps) {
     </>
   )
 }
-

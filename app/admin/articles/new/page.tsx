@@ -42,6 +42,7 @@ export default function NewArticlePage() {
     categoryId: '',
     editorId: '',
     published: false,
+    scheduledAt: '',
     metaTitle: '',
     metaDescription: '',
     featured: false,
@@ -203,6 +204,39 @@ export default function NewArticlePage() {
           />
         </div>
 
+        {/* Publishing Options */}
+        <div className="border-t pt-6">
+          <h2 className="text-xl font-bold mb-4">Publishing Options</h2>
+          
+          <div className="space-y-4">
+            <div className="flex items-center gap-2">
+              <input
+                id="published"
+                type="checkbox"
+                checked={formData.published}
+                onChange={(e) => setFormData({ ...formData, published: e.target.checked })}
+              />
+              <Label htmlFor="published">Publish immediately</Label>
+            </div>
+
+            <div>
+              <Label htmlFor="scheduledAt">Schedule for later (leave empty to publish now)</Label>
+              <Input
+                id="scheduledAt"
+                type="datetime-local"
+                value={formData.scheduledAt}
+                onChange={(e) => setFormData({ ...formData, scheduledAt: e.target.value })}
+                placeholder="Schedule publication date"
+              />
+              {formData.scheduledAt && (
+                <p className="text-sm text-gray-500 mt-1">
+                  Article will be published on {new Date(formData.scheduledAt).toLocaleString()}
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+
         {/* SEO */}
         <div className="border-t pt-6">
           <h2 className="text-xl font-bold mb-4">SEO Settings</h2>
@@ -265,10 +299,12 @@ export default function NewArticlePage() {
           </Button>
           <Button
             type="button"
-            onClick={(e) => handleSubmit(e, true)}
+            onClick={(e) => handleSubmit(e, !formData.scheduledAt)}
             disabled={loading}
           >
-            {loading ? 'Publishing...' : 'Publish'}
+            {loading 
+              ? (formData.scheduledAt ? 'Scheduling...' : 'Publishing...') 
+              : (formData.scheduledAt ? 'Schedule' : 'Publish')}
           </Button>
         </div>
       </form>

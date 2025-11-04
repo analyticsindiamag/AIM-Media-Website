@@ -1,3 +1,8 @@
+# Prisma Schema for SQLite Production
+
+This is an example of how your `prisma/schema.prisma` should look for SQLite deployment:
+
+```prisma
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
@@ -6,7 +11,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -111,3 +116,27 @@ model Settings {
 
   @@map("settings")
 }
+```
+
+## Key Changes for SQLite:
+
+1. **Datasource Provider**: Changed from `postgresql` to `sqlite`
+2. **Database URL**: Use `file:./prisma/prod.db` in your `.env` file
+3. **No Server Setup**: SQLite doesn't require a database server
+4. **File Location**: Database file will be at `/var/www/ai-tech-news/prisma/prod.db`
+
+## Migration from PostgreSQL to SQLite:
+
+If you're migrating from PostgreSQL:
+
+1. Update `prisma/schema.prisma` datasource to `sqlite`
+2. Update `.env` `DATABASE_URL` to `file:./prisma/prod.db`
+3. Run `npx prisma db push` to create new SQLite database
+4. Migrate data manually or use Prisma migrations
+
+**Note**: SQLite has some limitations compared to PostgreSQL:
+- No concurrent writes (fine for most use cases)
+- Simpler data types
+- Better for smaller databases (< 100GB)
+- Perfect for single-server deployments
+

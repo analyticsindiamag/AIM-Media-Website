@@ -1,8 +1,9 @@
 "use client"
 
 import Link from 'next/link'
-import { Search, Moon, Sun } from 'lucide-react'
-import { useEffect, useMemo, useState, useCallback } from 'react'
+import Image from 'next/image'
+import { Search, ChevronDown } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
 import { usePathname } from 'next/navigation'
 
 type Category = { id: string; name: string; slug: string }
@@ -10,10 +11,8 @@ type Category = { id: string; name: string; slug: string }
 export function Header() {
   const pathname = usePathname()
   const [categories, setCategories] = useState<Category[]>([])
-  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
-    if (typeof window === 'undefined') return 'light'
-    return (localStorage.getItem('theme') as 'light' | 'dark') || 'light'
-  })
+  const [logoUrl, setLogoUrl] = useState<string>('')
+  const [siteName, setSiteName] = useState<string>('THE WALL STREET JOURNAL')
   const [showSearch, setShowSearch] = useState(false)
 
   useEffect(() => {
@@ -21,29 +20,29 @@ export function Header() {
       .then((r) => r.json())
       .then((data: Category[]) => setCategories(data))
       .catch(() => setCategories([]))
-  }, [])
-
-  useEffect(() => {
-    const root = document.documentElement
-    if (theme === 'dark') root.classList.add('dark')
-    else root.classList.remove('dark')
-    localStorage.setItem('theme', theme)
-  }, [theme])
-
-  const toggleTheme = useCallback(() => {
-    setTheme((t) => (t === 'dark' ? 'light' : 'dark'))
+    
+    fetch('/api/settings')
+      .then((r) => r.json())
+      .then((settings) => {
+        if (settings.logoUrl) setLogoUrl(settings.logoUrl)
+        if (settings.siteName) setSiteName(settings.siteName.toUpperCase())
+      })
+      .catch(() => {})
   }, [])
 
   const navLinks = useMemo(() => {
     const staticCats = [
-      { href: '/category/tech', label: 'TECH' },
+      { href: '/', label: 'Latest' },
+      { href: '/category/tech', label: 'Tech' },
       { href: '/category/ai', label: 'AI' },
-      { href: '/category/ai-startups', label: 'STARTUPS' },
-      { href: '/category/opinion', label: 'OPINION' },
+      { href: '/category/ai-startups', label: 'Startups' },
+      { href: '/category/opinion', label: 'Opinion' },
+      { href: '/category/ai-tools', label: 'AI Tools' },
+      { href: '/category/enterprise-ai', label: 'Enterprise AI' },
+      { href: '/category/research', label: 'Research' },
     ]
-    const dynamic = categories.map((c) => ({ href: `/category/${c.slug}`, label: c.name.toUpperCase() }))
+    const dynamic = categories.map((c) => ({ href: `/category/${c.slug}`, label: c.name }))
     const all = [...staticCats, ...dynamic]
-    // de-dupe by href
     const seen = new Set<string>()
     return all.filter((l) => (seen.has(l.href) ? false : (seen.add(l.href), true)))
   }, [categories])
@@ -52,108 +51,151 @@ export function Header() {
   if (pathname?.startsWith('/admin')) return null
 
   return (
-    <header className="border-b border-border bg-white dark:bg-[#0a0a0a] sticky top-0 z-50">
-      {/* Top bar - NYT style */}
-      <div className="border-b border-border bg-white dark:bg-[#0a0a0a]">
-        <div className="content-container">
-          <div className="flex items-center justify-between h-8 px-4 md:px-8 text-[11px]">
-            <div className="flex items-center gap-4">
-              <Link href="/" className="text-black dark:text-white hover:text-[#666666] dark:hover:text-[#999999] uppercase font-medium">
-                Home
-              </Link>
-              <Link href="/category/enterprise-ai" className="text-black dark:text-white hover:text-[#666666] dark:hover:text-[#999999] uppercase font-medium">
-                Enterprise AI
-              </Link>
-              <Link href="/category/ai-startups" className="text-black dark:text-white hover:text-[#666666] dark:hover:text-[#999999] uppercase font-medium">
-                AI Startups
-              </Link>
+    <header className="bg-white border-b border-[var(--wsj-border-light)] sticky top-0 z-50">
+      {/* Top bar - WSJ style dark bar */}
+      <div className="bg-[var(--wsj-bg-dark-gray)] text-[var(--wsj-text-white)]">
+        <div className="wsj-container">
+          <div className="flex items-center justify-between h-[var(--wsj-header-top-height)] px-4 md:px-8" style={{ fontSize: 'var(--wsj-font-size-ticker)', fontFamily: 'var(--wsj-font-sans)' }}>
+            <div className="flex items-center gap-3">
+              <span style={{ fontWeight: 'var(--wsj-font-weight-medium)' }}>{siteName.split(' ').slice(0, -2).join(' ')}</span>
             </div>
-            <div className="flex items-center gap-4">
-              <button className="text-black dark:text-white hover:text-[#666666] dark:hover:text-[#999999] uppercase font-medium">
-                Subscribe
-              </button>
-              <button className="text-black dark:text-white hover:text-[#666666] dark:hover:text-[#999999] uppercase font-medium">
-                Log In
-              </button>
+            <div className="flex items-center gap-3">
+              <span style={{ fontWeight: 'var(--wsj-font-weight-medium)' }}>{siteName} | Tech</span>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="content-container">
-        {/* Main header: centered logo and nav */}
-        <div className="flex items-center justify-between h-20 px-4 md:px-8">
-          {/* Search icon on left */}
-          <button
-            className="p-2 transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#1a1a1a] rounded"
-            aria-label="Search"
-            onClick={() => setShowSearch(true)}
-          >
-            <Search className="w-5 h-5 text-black dark:text-white" />
-          </button>
-          
-          {/* Centered Logo */}
-          <Link href="/" className="flex items-center flex-1 justify-center" aria-label="Home">
-            <div className="font-serif font-black tracking-tight text-4xl md:text-5xl lg:text-6xl text-black dark:text-white text-center">
-              Port
-            </div>
-          </Link>
-          
-          {/* Right side: dark mode */}
-          <div className="flex items-center gap-1">
-            <button
-              className="p-2 transition-colors hover:bg-[#f5f5f5] dark:hover:bg-[#1a1a1a] rounded"
-              aria-label="Toggle dark mode"
-              onClick={toggleTheme}
-            >
-              {theme === 'dark' ? (
-                <Sun className="w-5 h-5 text-black dark:text-white" />
+      {/* Main header section */}
+      <div className="bg-white">
+        <div className="wsj-container">
+          {/* Logo and actions row */}
+          <div className="flex items-center justify-between py-4 px-4 md:px-8">
+            {/* Left spacer */}
+            <div className="w-12"></div>
+            
+            {/* Centered Logo */}
+            <Link href="/" className="flex items-center justify-center flex-1" aria-label="Home">
+              {logoUrl ? (
+                <div className="flex items-center justify-center h-12 md:h-16 w-full max-w-[300px]">
+                  {logoUrl.startsWith('http') && !logoUrl.match(/supabase\.co|cloudinary\.com|unsplash\.com|googleusercontent\.com/) ? (
+                    <img
+                      src={logoUrl}
+                      alt={siteName}
+                      className="max-h-full max-w-full object-contain"
+                      style={{ height: 'auto', width: 'auto' }}
+                      onError={() => setLogoUrl('')}
+                    />
+                  ) : (
+                    <div className="relative w-full h-full">
+                      <Image
+                        src={logoUrl}
+                        alt={siteName}
+                        fill
+                        className="object-contain"
+                        priority
+                        sizes="(max-width: 768px) 200px, 300px"
+                        onError={() => setLogoUrl('')}
+                      />
+                    </div>
+                  )}
+                </div>
               ) : (
-                <Moon className="w-5 h-5 text-black dark:text-white" />
+                <div className="wsj-logo">
+                  {siteName.split(' ').map((word, i) => {
+                    if (i === 0 || i === siteName.split(' ').length - 1) {
+                      return <span key={i} style={{ fontSize: '0.7em' }}>{word} </span>
+                    }
+                    return <span key={i}>{word} </span>
+                  })}
+                </div>
               )}
+            </Link>
+            
+            {/* Right side: Subscribe/Sign In */}
+            <div className="flex flex-col items-end gap-1">
+              <div className="flex items-center gap-2">
+                <button className="wsj-button-primary">
+                  Subscribe
+                </button>
+                <button className="wsj-button-secondary">
+                  Sign In
+                </button>
+              </div>
+              <button className="text-[var(--wsj-blue-primary)] font-sans text-[var(--wsj-font-size-xs)] font-bold hover:underline">
+                VIEW MEMBERSHIP OPTIONS
+              </button>
+            </div>
+          </div>
+
+          {/* Secondary navigation */}
+          <div className="flex items-center justify-between border-t border-[var(--wsj-border-light)] px-4 md:px-8 py-2" style={{ fontSize: 'var(--wsj-font-size-sm)', fontFamily: 'var(--wsj-font-sans)' }}>
+            <div className="flex items-center gap-4 text-[var(--wsj-text-medium-gray)]">
+              <button className="hover:text-[var(--wsj-text-black)] transition-colors flex items-center gap-1">
+                English Edition <ChevronDown className="w-3 h-3" />
+              </button>
+              <Link href="/" className="hover:text-[var(--wsj-text-black)] transition-colors">Print Edition</Link>
+              <Link href="/" className="hover:text-[var(--wsj-text-black)] transition-colors">Video</Link>
+              <Link href="/" className="hover:text-[var(--wsj-text-black)] transition-colors">Audio</Link>
+              <span className="text-[var(--wsj-border-light)]">|</span>
+              <Link href="/" className="hover:text-[var(--wsj-text-black)] transition-colors">Latest Headlines</Link>
+              <Link href="/" className="hover:text-[var(--wsj-text-black)] transition-colors">Puzzles</Link>
+              <button className="hover:text-[var(--wsj-text-black)] transition-colors flex items-center gap-1">
+                More <ChevronDown className="w-3 h-3" />
+              </button>
+            </div>
+            <button
+              onClick={() => setShowSearch(true)}
+              className="text-[var(--wsj-text-black)] hover:text-[var(--wsj-text-medium-gray)] transition-colors"
+              aria-label="Search"
+            >
+              <Search className="w-5 h-5" />
             </button>
           </div>
+
+          {/* Main Navigation row */}
+          <nav className="border-t border-[var(--wsj-border-light)] px-4 md:px-8">
+            <div className="flex items-center justify-start gap-0 h-[var(--wsj-header-nav-height)] overflow-x-auto">
+              {navLinks.map((l, index) => {
+                const isActive = pathname === l.href || (l.href !== '/' && pathname?.startsWith(l.href))
+                return (
+                  <Link
+                    key={l.href}
+                    href={l.href}
+                    className={`wsj-nav-link ${isActive ? 'wsj-nav-link-active' : ''}`}
+                  >
+                    {l.label}
+                  </Link>
+                )
+              })}
+            </div>
+          </nav>
         </div>
-        
-        {/* Main Navigation row */}
-        <nav className="border-t border-border px-4 md:px-8">
-          <div className="flex items-center justify-center gap-6 h-12 overflow-x-auto">
-            {navLinks.map((l) => (
-              <Link
-                key={l.href}
-                href={l.href}
-                className="text-[13px] tracking-wide uppercase text-black dark:text-white hover:text-[#666666] dark:hover:text-[#999999] transition-colors py-2 whitespace-nowrap font-medium"
-              >
-                {l.label}
-              </Link>
-            ))}
-          </div>
-        </nav>
       </div>
 
-      {/* Search overlay - NYT style */}
+      {/* Search overlay - WSJ style */}
       {showSearch && (
         <div 
-          className="fixed inset-0 z-[60] bg-black/70 dark:bg-black/90" 
+          className="fixed inset-0 z-[60] bg-black/70" 
           onClick={() => setShowSearch(false)}
         >
           <div
-            className="content-container px-4 md:px-8 pt-24"
+            className="wsj-container px-4 md:px-8 pt-24"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="bg-white dark:bg-[#111111] border border-border shadow-lg max-w-2xl mx-auto">
+            <div className="bg-white border border-[var(--wsj-border-light)] shadow-lg max-w-2xl mx-auto">
               <div className="p-6">
                 <input
                   autoFocus
                   type="search"
                   placeholder="Search articles..."
                   aria-label="Search"
-                  className="w-full px-4 py-4 text-lg border-0 border-b-2 border-[#e6e6e6] dark:border-[#2a2a2a] bg-transparent text-black dark:text-white focus:outline-none focus:border-black dark:focus:border-white transition-colors"
+                  className="w-full px-4 py-4 text-lg border-0 border-b-2 border-[var(--wsj-border-light)] bg-transparent text-[var(--wsj-text-black)] focus:outline-none focus:border-[var(--wsj-text-black)] transition-colors font-sans"
                   onKeyDown={(e) => {
                     if (e.key === 'Escape') setShowSearch(false)
                   }}
                 />
-                <div className="text-xs text-[#666666] dark:text-[#999999] mt-3">
+                <div className="text-xs text-[var(--wsj-text-medium-gray)] mt-3 font-sans">
                   Press Esc to close
                 </div>
               </div>
@@ -164,4 +206,3 @@ export function Header() {
     </header>
   )
 }
-

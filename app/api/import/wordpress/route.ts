@@ -120,25 +120,53 @@ export async function POST(request: NextRequest) {
           })
         }
 
-        // Determine editor
+        // Determine editor - prioritize email matching, then name
         const editorName = [authorFirst, authorLast].filter(Boolean).join(' ').trim() || authorUsername || 'Admin'
-        let editor = await prisma.editor.findFirst({
-          where: { name: editorName },
-        })
+        const editorEmail = (authorEmail || `${(authorUsername || 'admin').toLowerCase()}@example.com`).trim()
+        
+        let editor = null
+        if (authorEmail) {
+          // Try to find by email first (more reliable)
+          editor = await prisma.editor.findUnique({
+            where: { email: editorEmail },
+          })
+        }
+        
         if (!editor) {
-          const email = (authorEmail || `${(authorUsername || 'admin').toLowerCase()}@example.com`).trim()
-          editor = await prisma.editor.create({ data: { name: editorName, email } })
+          // Try to find by name
+          editor = await prisma.editor.findFirst({
+            where: { name: editorName },
+          })
+        }
+        
+        if (!editor) {
+          // Create new editor, ensuring email is unique
+          try {
+            editor = await prisma.editor.create({ 
+              data: { 
+                name: editorName, 
+                email: editorEmail 
+              } 
+            })
+          } catch (error) {
+            // If email conflict, try with a unique email
+            const uniqueEmail = `${editorEmail.split('@')[0]}-${Date.now()}@${editorEmail.split('@')[1] || 'example.com'}`
+            editor = await prisma.editor.create({ 
+              data: { 
+                name: editorName, 
+                email: uniqueEmail 
+              } 
+            })
+          }
         }
 
         // Slug
         const baseSlug = toSlug(slugProvided || title)
 
-        // Ensure unique slug
-        let uniqueSlug = baseSlug
-        let counter = 1
-        while (await prisma.article.findUnique({ where: { slug: uniqueSlug } })) {
-          uniqueSlug = `${baseSlug}-${counter++}`
-        }
+        // Check if article exists by slug for update
+        const existingArticle = await prisma.article.findUnique({ 
+          where: { slug: baseSlug } 
+        })
 
         // Read time
         const wordCount = content.replace(/<[^>]*>/g, '').split(/\s+/).filter(Boolean).length
@@ -148,20 +176,52 @@ export async function POST(request: NextRequest) {
         const published = status.toLowerCase() === 'publish'
         const publishedAt = date ? new Date(date) : new Date()
 
-        await prisma.article.create({
-          data: {
-            title,
-            slug: uniqueSlug,
-            excerpt: excerpt || null,
-            content,
-            featuredImage: imageUrl || null,
-            published,
-            publishedAt: published ? publishedAt : null,
-            readTime,
-            categoryId: category.id,
-            editorId: editor.id,
-          },
-        })
+        // Upsert: update if exists, create if not
+        if (existingArticle) {
+          // Update existing article, ensuring category and editor exist
+          // Handle publishedAt: use CSV date if publishing, preserve existing if unpublishing, null if unpublishing
+          let finalPublishedAt = null
+          if (published) {
+            finalPublishedAt = date ? new Date(date) : (existingArticle.publishedAt || new Date())
+          }
+          
+          await prisma.article.update({
+            where: { id: existingArticle.id },
+            data: {
+              title,
+              excerpt: excerpt || null,
+              content,
+              featuredImage: imageUrl || null,
+              published,
+              publishedAt: finalPublishedAt,
+              readTime,
+              categoryId: category.id, // Ensure category exists
+              editorId: editor.id, // Ensure editor exists
+            },
+          })
+        } else {
+          // Create new article with unique slug if needed
+          let uniqueSlug = baseSlug
+          let counter = 1
+          while (await prisma.article.findUnique({ where: { slug: uniqueSlug } })) {
+            uniqueSlug = `${baseSlug}-${counter++}`
+          }
+
+          await prisma.article.create({
+            data: {
+              title,
+              slug: uniqueSlug,
+              excerpt: excerpt || null,
+              content,
+              featuredImage: imageUrl || null,
+              published,
+              publishedAt: published ? publishedAt : null,
+              readTime,
+              categoryId: category.id,
+              editorId: editor.id,
+            },
+          })
+        }
 
         success++
       } catch (error: unknown) {

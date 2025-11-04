@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
+import { ImageUpload } from '@/components/admin/image-upload'
 
 export default function SettingsPage() {
   const [loading, setLoading] = useState(false)
@@ -36,7 +37,13 @@ export default function SettingsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(form),
       })
-      if (!res.ok) alert('Failed to save settings')
+      if (res.ok) {
+        alert('Settings saved successfully!')
+        // Refresh the page to show updated logo
+        window.location.reload()
+      } else {
+        alert('Failed to save settings')
+      }
     } finally {
       setLoading(false)
     }
@@ -52,8 +59,16 @@ export default function SettingsPage() {
           <Input id="siteName" value={form.siteName} onChange={(e) => setForm({ ...form, siteName: e.target.value })} />
         </div>
         <div>
-          <Label htmlFor="logoUrl">Logo URL</Label>
-          <Input id="logoUrl" value={form.logoUrl} onChange={(e) => setForm({ ...form, logoUrl: e.target.value })} placeholder="https://..." />
+          <Label>Logo</Label>
+          <ImageUpload
+            label="Upload Logo Image"
+            value={form.logoUrl}
+            onChange={(url) => setForm({ ...form, logoUrl: url })}
+          />
+          <div className="mt-2">
+            <Label htmlFor="logoUrl">Or enter Logo URL manually</Label>
+            <Input id="logoUrl" value={form.logoUrl} onChange={(e) => setForm({ ...form, logoUrl: e.target.value })} placeholder="https://..." />
+          </div>
         </div>
         <div>
           <Label htmlFor="subscribeCta">Subscribe CTA Text</Label>
