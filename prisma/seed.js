@@ -8,6 +8,13 @@ function unsplash(id, { w = 1600, h = 900, q = 80 } = {}) {
   return `https://images.unsplash.com/${id}?auto=format&fit=crop&w=${w}&h=${h}&q=${q}`
 }
 
+function generateSlug(name) {
+  return name
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/(^-|-$)/g, '')
+}
+
 async function main() {
   // Basic settings
   await prisma.settings.upsert({
@@ -44,6 +51,7 @@ async function main() {
       create: {
         name: 'Sara Patel',
         email: 'sara@aitechnews.com',
+        slug: generateSlug('Sara Patel'),
         bio: 'Senior editor covering enterprise AI, platforms, and governance.',
         avatar: unsplash('photo-1531123414780-f74287bb7a5d', { w: 256, h: 256, q: 80 }),
       },
@@ -54,6 +62,7 @@ async function main() {
       create: {
         name: 'Luis Hernandez',
         email: 'luis@aitechnews.com',
+        slug: generateSlug('Luis Hernandez'),
         bio: 'Reports on AI startups, product launches, and funding rounds.',
         avatar: unsplash('photo-1527980965255-d3b416303d12', { w: 256, h: 256, q: 80 }),
       },
@@ -64,6 +73,7 @@ async function main() {
       create: {
         name: 'Emma Chen',
         email: 'emma@aitechnews.com',
+        slug: generateSlug('Emma Chen'),
         bio: 'Tech reporter specializing in AI research and breakthroughs.',
         avatar: unsplash('photo-1573496359142-b8d87734a5a2', { w: 256, h: 256, q: 80 }),
       },
@@ -74,6 +84,7 @@ async function main() {
       create: {
         name: 'Michael Thompson',
         email: 'michael@aitechnews.com',
+        slug: generateSlug('Michael Thompson'),
         bio: 'Opinion columnist and analyst covering AI policy and ethics.',
         avatar: unsplash('photo-1507003211169-0a1dd7228f2d', { w: 256, h: 256, q: 80 }),
       },
