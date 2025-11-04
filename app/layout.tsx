@@ -4,6 +4,7 @@ import "./globals.css";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import MixpanelProvider from "./mixpanel-provider";
+import { Suspense } from "react";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -59,13 +60,15 @@ export default function RootLayout({
       <body
         className={`${inter.variable} ${garamond.variable} antialiased`}
       >
-        <MixpanelProvider>
-          <Header />
-          <main className="min-h-screen">
-            {children}
-          </main>
-          <Footer />
-        </MixpanelProvider>
+        <Suspense fallback={null}>
+          <MixpanelProvider>
+            <Header />
+            <main className="min-h-screen">
+              {children}
+            </main>
+            <Footer />
+          </MixpanelProvider>
+        </Suspense>
       </body>
     </html>
   );
