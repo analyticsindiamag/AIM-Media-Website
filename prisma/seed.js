@@ -1,4 +1,5 @@
 /* eslint-disable no-console */
+/* eslint-disable no-console-Testing */
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const { PrismaClient } = require('@prisma/client')
 
