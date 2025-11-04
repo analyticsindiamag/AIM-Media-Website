@@ -140,12 +140,20 @@ export async function POST(request: NextRequest) {
         }
         
         if (!editor) {
-          // Create new editor, ensuring email is unique
+          // Create new editor, ensuring required slug and unique email
+          const baseEditorSlug = toSlug(editorName || (authorUsername || 'admin')) || `editor-${Date.now()}`
+          let finalEditorSlug = baseEditorSlug
+          let suffix = 1
+          while (await prisma.editor.findFirst({ where: { slug: finalEditorSlug } })) {
+            finalEditorSlug = `${baseEditorSlug}-${suffix++}`
+          }
+
           try {
             editor = await prisma.editor.create({ 
               data: { 
                 name: editorName, 
-                email: editorEmail 
+                email: editorEmail,
+                slug: finalEditorSlug,
               } 
             })
           } catch (error) {
@@ -154,7 +162,8 @@ export async function POST(request: NextRequest) {
             editor = await prisma.editor.create({ 
               data: { 
                 name: editorName, 
-                email: uniqueEmail 
+                email: uniqueEmail,
+                slug: finalEditorSlug,
               } 
             })
           }

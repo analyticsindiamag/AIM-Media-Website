@@ -54,6 +54,7 @@ async function main() {
         slug: generateSlug('Sara Patel'),
         bio: 'Senior editor covering enterprise AI, platforms, and governance.',
         avatar: unsplash('photo-1531123414780-f74287bb7a5d', { w: 256, h: 256, q: 80 }),
+        slug: slugify('Sara Patel'),
       },
     }),
     prisma.editor.upsert({
@@ -65,6 +66,7 @@ async function main() {
         slug: generateSlug('Luis Hernandez'),
         bio: 'Reports on AI startups, product launches, and funding rounds.',
         avatar: unsplash('photo-1527980965255-d3b416303d12', { w: 256, h: 256, q: 80 }),
+        slug: slugify('Luis Hernandez'),
       },
     }),
     prisma.editor.upsert({
@@ -76,6 +78,7 @@ async function main() {
         slug: generateSlug('Emma Chen'),
         bio: 'Tech reporter specializing in AI research and breakthroughs.',
         avatar: unsplash('photo-1573496359142-b8d87734a5a2', { w: 256, h: 256, q: 80 }),
+        slug: slugify('Emma Chen'),
       },
     }),
     prisma.editor.upsert({
@@ -87,6 +90,7 @@ async function main() {
         slug: generateSlug('Michael Thompson'),
         bio: 'Opinion columnist and analyst covering AI policy and ethics.',
         avatar: unsplash('photo-1507003211169-0a1dd7228f2d', { w: 256, h: 256, q: 80 }),
+        slug: slugify('Michael Thompson'),
       },
     }),
   ])
