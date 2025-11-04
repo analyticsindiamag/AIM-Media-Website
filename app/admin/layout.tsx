@@ -14,6 +14,9 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode
 }) {
+  // Authentication is now handled in middleware.ts to prevent infinite redirect loops
+  // This layout only renders for authenticated users (or login page which has its own layout)
+
   return (
     <div className="flex min-h-screen">
       <AdminNav />

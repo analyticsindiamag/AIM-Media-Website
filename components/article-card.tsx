@@ -2,6 +2,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { format } from 'date-fns'
 import { MessageCircle, Clock } from 'lucide-react'
+import { getArticleUrl } from '@/lib/article-url'
 
 interface ArticleCardProps {
   article: {
@@ -32,14 +33,16 @@ export function ArticleCard({ article, size = 'medium', showExcerpt = false }: A
     ? 'text-[var(--wsj-font-size-2xl)] md:text-[var(--wsj-font-size-3xl)]' 
     : 'text-[var(--wsj-font-size-xl)] md:text-[var(--wsj-font-size-2xl)]'
 
+  const articleUrl = getArticleUrl(article)
+
   return (
     <article className="wsj-article-card group">
-      <Link href={`/article/${article.slug}`} className="block">
+      <Link href={articleUrl} className="block">
         {article.featuredImage && (
           <div className={`relative w-full overflow-hidden mb-4 image-frame ${imageHeight}`}>
             <Image
               src={article.featuredImage}
-              alt={article.title}
+              alt={article.featuredImageAltText || article.title}
               fill
               loading="lazy"
               className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"

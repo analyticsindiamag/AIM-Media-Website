@@ -15,6 +15,8 @@ model Category {
   name        String    @unique
   slug        String    @unique
   description String?
+  bannerImage String?   // Banner image URL for category pages
+  order       Int       @default(0) // For custom ordering
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   articles    Article[]
@@ -38,27 +40,31 @@ model Editor {
 }
 
 model Article {
-  id              String    @id @default(cuid())
-  title           String
-  slug            String    @unique
-  excerpt         String?
-  content         String
-  featuredImage   String?
-  published       Boolean   @default(false)
-  publishedAt     DateTime?
-  scheduledAt     DateTime?
-  views           Int       @default(0)
-  readTime        Int       @default(5) // in minutes
-  metaTitle       String?
-  metaDescription String?
-  featured        Boolean   @default(false)
-  categoryId      String
-  category        Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  editorId        String
-  editor          Editor    @relation(fields: [editorId], references: [id], onDelete: Cascade)
-  comments        Comment[]
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  id                       String    @id @default(cuid())
+  title                    String
+  slug                     String    @unique
+  excerpt                  String?
+  content                  String
+  featuredImage            String?
+  featuredImageTitle       String? // Image title for SEO
+  featuredImageCaption     String? // Image caption
+  featuredImageDescription String? // Image description
+  featuredImageAltText     String? // Image alt text for accessibility and SEO
+  published                Boolean   @default(false)
+  publishedAt              DateTime?
+  scheduledAt              DateTime?
+  views                    Int       @default(0)
+  readTime                 Int       @default(5) // in minutes
+  metaTitle                String?
+  metaDescription          String?
+  featured                 Boolean   @default(false)
+  categoryId               String
+  category                 Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  editorId                 String
+  editor                   Editor    @relation(fields: [editorId], references: [id], onDelete: Cascade)
+  comments                 Comment[]
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
 
   @@index([slug])
   @@index([published, publishedAt])
@@ -100,14 +106,49 @@ model Subscriber {
 }
 
 model Settings {
-  id              String   @id @default("default")
-  siteName        String   @default("AI Tech News")
-  logoUrl         String?
-  navLinksJson    String? // JSON string of nav links
-  footerLinksJson String? // JSON string of footer links
-  subscribeCta    String? // CTA text shown near subscribe form
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id                 String   @id @default("default")
+  siteName           String   @default("AI Tech News")
+  logoUrl            String?
+  navLinksJson       String? // JSON string of nav links
+  footerLinksJson    String? // JSON string of footer links
+  subscribeCta       String? // CTA text shown near subscribe form
+  headerBarLeftText  String? // Left side text in header bar
+  headerBarLeftLink  String? // Left side link URL in header bar
+  headerBarRightText String? // Right side text in header bar
+  headerBarRightLink String? // Right side link URL in header bar
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 
   @@map("settings")
+}
+
+model SponsoredBanner {
+  id           String    @id @default(cuid())
+  title        String // Banner title/name for admin
+  imageUrl     String // Banner image URL
+  linkUrl      String? // Click-through URL (optional)
+  type         String // 'homepage-main' | 'homepage-side' | 'article-side'
+  active       Boolean   @default(true)
+  startDate    DateTime?
+  endDate      DateTime?
+  displayOrder Int       @default(0) // For ordering multiple banners of same type
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([type, active])
+  @@map("sponsored_banners")
+}
+
+model StaticPage {
+  id          String   @id @default(cuid())
+  title       String
+  slug        String   @unique
+  content     String   // HTML content
+  metaTitle   String?
+  metaDescription String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([slug])
+  @@map("static_pages")
 }

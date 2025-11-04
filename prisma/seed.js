@@ -16,7 +16,7 @@ function generateSlug(name) {
 }
 
 async function main() {
-  // Basic settings
+  // Basic settings - includes all new fields
   await prisma.settings.upsert({
     where: { id: 'default' },
     update: {},
@@ -40,6 +40,10 @@ async function main() {
         { label: 'Terms', href: '/terms' },
       ]),
       subscribeCta: 'Join 10,000+ readers for weekly AI updates.',
+      headerBarLeftText: 'AI',
+      headerBarLeftLink: '/category/ai',
+      headerBarRightText: 'AI TECH NEWS | Tech',
+      headerBarRightLink: '/',
     },
   })
 
@@ -91,7 +95,7 @@ async function main() {
     }),
   ])
 
-  // Categories - expanded list
+  // Categories - expanded list with new schema fields (bannerImage, order)
   const [tech, ai, aiStartups, opinion, tools, enterpriseAI, research] = await Promise.all([
     prisma.category.upsert({
       where: { slug: 'tech' },
@@ -100,6 +104,8 @@ async function main() {
         name: 'Tech',
         slug: 'tech',
         description: 'General technology news and innovation.',
+        bannerImage: unsplash('photo-1518770660439-4636190af475', { w: 1600, h: 400 }),
+        order: 1,
       },
     }),
     prisma.category.upsert({
@@ -109,6 +115,8 @@ async function main() {
         name: 'AI',
         slug: 'ai',
         description: 'Artificial intelligence breakthroughs and trends.',
+        bannerImage: unsplash('photo-1677442136019-21780ecad995', { w: 1600, h: 400 }),
+        order: 2,
       },
     }),
     prisma.category.upsert({
@@ -118,6 +126,8 @@ async function main() {
         name: 'AI Startups',
         slug: 'ai-startups',
         description: 'Early-stage innovations, funding, and product launches.',
+        bannerImage: unsplash('photo-1551288049-bebda4e38f71', { w: 1600, h: 400 }),
+        order: 3,
       },
     }),
     prisma.category.upsert({
@@ -127,6 +137,8 @@ async function main() {
         name: 'Opinion',
         slug: 'opinion',
         description: 'Editorial perspectives on AI and technology.',
+        bannerImage: unsplash('photo-1451187580459-43490279c0fa', { w: 1600, h: 400 }),
+        order: 4,
       },
     }),
     prisma.category.upsert({
@@ -136,6 +148,8 @@ async function main() {
         name: 'AI Tools',
         slug: 'ai-tools',
         description: 'Practical tools and frameworks for builders.',
+        bannerImage: unsplash('photo-1555949963-aa79dcee981c', { w: 1600, h: 400 }),
+        order: 5,
       },
     }),
     prisma.category.upsert({
@@ -145,6 +159,8 @@ async function main() {
         name: 'Enterprise AI',
         slug: 'enterprise-ai',
         description: 'Platforms, governance, and adoption in large organizations.',
+        bannerImage: unsplash('photo-1506744038136-46273834b3fb', { w: 1600, h: 400 }),
+        order: 6,
       },
     }),
     prisma.category.upsert({
@@ -154,6 +170,8 @@ async function main() {
         name: 'Research',
         slug: 'research',
         description: 'Breakthroughs from academia and industry labs.',
+        bannerImage: unsplash('photo-1532619675605-1ede6c002ed6', { w: 1600, h: 400 }),
+        order: 7,
       },
     }),
   ])
@@ -171,7 +189,7 @@ async function main() {
   const daysAgo = (n) => new Date(now.getTime() - n * 24 * 60 * 60 * 1000)
   const hoursAgo = (n) => new Date(now.getTime() - n * 60 * 60 * 1000)
 
-  // Featured hero article (today)
+  // Featured hero article (today) - with all new image SEO fields
   await createArticle({
     title: 'Startup raises $18M to bring AI to edge cameras',
     slug: 'startup-raises-18m-ai-edge-cameras',
@@ -188,6 +206,10 @@ The Series A will be used to expand the engineering team and build partnerships 
 
 Industry analysts note that edge AI is becoming a key differentiator as companies seek to reduce dependency on cloud infrastructure while maintaining real-time capabilities. The market for edge AI hardware is projected to reach $65 billion by 2028.`,
     featuredImage: unsplash('photo-1518779578993-ec3579fee39f', { w: 1600, h: 900 }),
+    featuredImageTitle: 'Edge AI Camera Technology',
+    featuredImageCaption: 'VisionAI\'s edge camera technology enables real-time AI processing without cloud connectivity.',
+    featuredImageDescription: 'Close-up view of an edge AI camera device showing the processing unit and camera module.',
+    featuredImageAltText: 'Edge AI camera device with integrated processing unit for on-device computer vision',
     published: true,
     publishedAt: hoursAgo(6),
     readTime: 4,
@@ -846,10 +868,381 @@ The release represents Google's continued investment in AI capabilities despite 
     }),
   ])
 
-  console.log('✅ Seeded: settings, editors, categories, and articles')
+  // Sponsored Banners - all types (use createMany with skipDuplicates or individual creates with catch)
+  try {
+    await Promise.all([
+      prisma.sponsoredBanner.create({
+        data: {
+          title: 'Enterprise AI Platform',
+          imageUrl: unsplash('photo-1506744038136-46273834b3fb', { w: 728, h: 90 }),
+          linkUrl: 'https://example.com/enterprise-ai',
+          type: 'homepage-main',
+          active: true,
+          displayOrder: 1,
+        },
+      }).catch(() => {}), // Ignore if already exists
+      prisma.sponsoredBanner.create({
+        data: {
+          title: 'AI Development Tools',
+          imageUrl: unsplash('photo-1555949963-aa79dcee981c', { w: 300, h: 600 }),
+          linkUrl: 'https://example.com/ai-tools',
+          type: 'homepage-side',
+          active: true,
+          displayOrder: 1,
+        },
+      }).catch(() => {}),
+      prisma.sponsoredBanner.create({
+        data: {
+          title: 'AI Research Platform',
+          imageUrl: unsplash('photo-1451187580459-43490279c0fa', { w: 300, h: 600 }),
+          linkUrl: 'https://example.com/research',
+          type: 'article-side',
+          active: true,
+          displayOrder: 1,
+        },
+      }).catch(() => {}),
+      prisma.sponsoredBanner.create({
+        data: {
+          title: 'Upcoming AI Conference',
+          imageUrl: unsplash('photo-1519389950473-47ba0277781c', { w: 728, h: 90 }),
+          linkUrl: 'https://example.com/conference',
+          type: 'homepage-main',
+          active: true,
+          startDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // Starts in 7 days
+          endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // Ends in 30 days
+          displayOrder: 2,
+        },
+      }).catch(() => {}),
+    ])
+  } catch (error) {
+    // Ignore duplicate errors
+    if (!error.message?.includes('Unique constraint')) {
+      console.warn('Warning creating sponsored banners:', error.message)
+    }
+  }
+
+  // Subscribers - sample email list
+  await Promise.all([
+    prisma.subscriber.create({
+      data: { email: 'subscriber1@example.com' },
+    }).catch(() => {}), // Ignore duplicates
+    prisma.subscriber.create({
+      data: { email: 'subscriber2@example.com' },
+    }).catch(() => {}),
+    prisma.subscriber.create({
+      data: { email: 'subscriber3@example.com' },
+    }).catch(() => {}),
+    prisma.subscriber.create({
+      data: { email: 'newsletter@example.com' },
+    }).catch(() => {}),
+  ])
+
+  // Comments - sample comments on featured article
+  const featuredArticle = await prisma.article.findFirst({
+    where: { featured: true },
+  })
+  
+  if (featuredArticle) {
+    const existingComments = await prisma.comment.count({
+      where: { articleId: featuredArticle.id },
+    })
+    
+    // Only create comments if they don't exist yet
+    if (existingComments === 0) {
+      await Promise.all([
+        prisma.comment.create({
+          data: {
+            content: 'This is fascinating! Edge AI is definitely the future for real-time applications.',
+            articleId: featuredArticle.id,
+            approved: true,
+          },
+        }).catch(() => {}),
+        prisma.comment.create({
+          data: {
+            content: 'Great to see companies focusing on low-power solutions. The 2 watts consumption is impressive.',
+            articleId: featuredArticle.id,
+            approved: true,
+          },
+        }).catch(() => {}),
+        prisma.comment.create({
+          data: {
+            content: 'Would love to see more details about the model architecture they\'re using.',
+            articleId: featuredArticle.id,
+            approved: false, // Pending approval
+          },
+        }).catch(() => {}),
+      ])
+    }
+  }
+
+  // Scheduled articles - articles scheduled for future publication
+  const futureDate = new Date(Date.now() + 2 * 24 * 60 * 60 * 1000) // 2 days from now
+  await createArticle({
+    title: 'Next-gen AI chips enter mass production',
+    slug: 'next-gen-ai-chips-mass-production',
+    excerpt: 'New generation of AI-optimized processors begins shipping to manufacturers.',
+    content: `The next generation of AI-optimized processors has entered mass production, promising significant improvements in performance and efficiency for AI workloads.
+
+Leading chip manufacturers have begun shipping new processors designed specifically for AI inference and training. These chips feature specialized architectures that accelerate common AI operations while reducing power consumption.
+
+Early benchmarks show 3x performance improvements over previous generations while maintaining similar power profiles. This could enable new classes of AI applications that weren't previously feasible.
+
+The chips are being adopted by cloud providers, data centers, and edge device manufacturers. The increased availability is expected to reduce costs and improve accessibility of AI capabilities.
+
+Industry analysts predict this will accelerate AI adoption across multiple sectors, from autonomous vehicles to smart home devices. The improved efficiency also addresses concerns about AI's energy consumption.
+
+The mass production represents a significant milestone in making AI more accessible and efficient. As the chips become more widely available, we can expect to see new applications and use cases emerge.`,
+    featuredImage: unsplash('photo-1518770660439-4636190af475', { w: 1200, h: 800 }),
+    published: false, // Not published yet
+    scheduledAt: futureDate,
+    readTime: 5,
+    featured: false,
+    categoryId: tech.id,
+    editorId: editorC.id,
+    metaTitle: 'Next-gen AI chips enter mass production',
+    metaDescription: 'New generation of AI-optimized processors begins shipping with 3x performance improvements.',
+  })
+
+  // Static Pages - footer pages with dummy content
+  try {
+    await Promise.all([
+      prisma.staticPage.upsert({
+        where: { slug: 'about' },
+        update: {},
+        create: {
+          title: 'About Us',
+          slug: 'about',
+          content: `<h2>Welcome to AI Tech News</h2>
+<p>AI Tech News is your premier destination for the latest developments in artificial intelligence, machine learning, and emerging technologies. We're dedicated to providing insightful, accurate, and timely coverage of the rapidly evolving AI landscape.</p>
+
+<h2>Our Mission</h2>
+<p>Our mission is to bridge the gap between complex AI technologies and understanding audiences. We believe that artificial intelligence is transforming the world, and everyone should have access to clear, comprehensive information about these changes.</p>
+
+<h2>What We Cover</h2>
+<ul>
+  <li><strong>Enterprise AI:</strong> How businesses are leveraging AI to transform operations</li>
+  <li><strong>AI Startups:</strong> Emerging companies and innovative solutions</li>
+  <li><strong>Research & Development:</strong> Breakthroughs from leading AI research institutions</li>
+  <li><strong>AI Tools:</strong> Reviews and insights on the latest AI-powered applications</li>
+  <li><strong>Industry Analysis:</strong> In-depth analysis of AI trends and market movements</li>
+  <li><strong>Opinion & Commentary:</strong> Thoughtful perspectives on AI policy, ethics, and impact</li>
+</ul>
+
+<h2>Our Team</h2>
+<p>Our team of experienced journalists and tech writers brings years of expertise in technology reporting. We're committed to delivering high-quality content that helps you stay informed about the world of AI.</p>
+
+<h2>Stay Connected</h2>
+<p>Follow us for daily updates, subscribe to our newsletter for weekly insights, and join our community of AI enthusiasts, developers, and business leaders who are shaping the future of technology.</p>`,
+          metaTitle: 'About Us - AI Tech News',
+          metaDescription: 'Learn about AI Tech News, your source for the latest AI and technology news, insights, and analysis.',
+        },
+      }),
+      prisma.staticPage.upsert({
+        where: { slug: 'contact' },
+        update: {},
+        create: {
+          title: 'Contact Us',
+          slug: 'contact',
+          content: `<h2>Get in Touch</h2>
+<p>We'd love to hear from you! Whether you have a story tip, feedback, questions, or partnership inquiries, please don't hesitate to reach out.</p>
+
+<h2>General Inquiries</h2>
+<p>For general questions, feedback, or information requests, please email us at:</p>
+<p><strong>Email:</strong> <a href="mailto:info@aitechnews.com">info@aitechnews.com</a></p>
+
+<h2>Editorial & Story Tips</h2>
+<p>Have a news tip or story idea? Our editorial team is always looking for compelling stories about AI and technology.</p>
+<p><strong>Email:</strong> <a href="mailto:editorial@aitechnews.com">editorial@aitechnews.com</a></p>
+
+<h2>Partnerships & Advertising</h2>
+<p>Interested in partnering with us or advertising opportunities? We work with brands and organizations that align with our mission of advancing AI knowledge.</p>
+<p><strong>Email:</strong> <a href="mailto:partnerships@aitechnews.com">partnerships@aitechnews.com</a></p>
+
+<h2>Press Inquiries</h2>
+<p>Members of the press can reach our communications team for media requests, press releases, and interview opportunities.</p>
+<p><strong>Email:</strong> <a href="mailto:press@aitechnews.com">press@aitechnews.com</a></p>
+
+<h2>Response Time</h2>
+<p>We aim to respond to all inquiries within 2-3 business days. For urgent matters, please indicate "URGENT" in your subject line.</p>
+
+<h2>Office Address</h2>
+<p>AI Tech News<br>
+123 Tech Street<br>
+San Francisco, CA 94105<br>
+United States</p>
+
+<p><em>Note: This is a sample address. Please update with your actual contact information.</em></p>`,
+          metaTitle: 'Contact Us - AI Tech News',
+          metaDescription: 'Get in touch with AI Tech News. Contact us for editorial inquiries, partnerships, advertising, or general questions.',
+        },
+      }),
+      prisma.staticPage.upsert({
+        where: { slug: 'privacy' },
+        update: {},
+        create: {
+          title: 'Privacy Policy',
+          slug: 'privacy',
+          content: `<h2>Privacy Policy</h2>
+<p><strong>Last Updated:</strong> ${new Date().toLocaleDateString()}</p>
+
+<p>At AI Tech News, we respect your privacy and are committed to protecting your personal information. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website.</p>
+
+<h2>Information We Collect</h2>
+<h3>Information You Provide</h3>
+<ul>
+  <li><strong>Newsletter Subscriptions:</strong> When you subscribe to our newsletter, we collect your email address.</li>
+  <li><strong>Comments:</strong> If you post comments, we may collect your name, email, and the content of your comments.</li>
+  <li><strong>Contact Forms:</strong> Information you provide when contacting us through our contact forms.</li>
+</ul>
+
+<h3>Automatically Collected Information</h3>
+<ul>
+  <li><strong>Usage Data:</strong> Information about how you access and use our website, including IP address, browser type, pages visited, and time spent on pages.</li>
+  <li><strong>Cookies:</strong> We use cookies and similar tracking technologies to enhance your experience and analyze site traffic.</li>
+</ul>
+
+<h2>How We Use Your Information</h2>
+<p>We use the information we collect to:</p>
+<ul>
+  <li>Deliver and maintain our services</li>
+  <li>Send you newsletters and updates (with your consent)</li>
+  <li>Respond to your inquiries and provide customer support</li>
+  <li>Analyze website usage and improve our content</li>
+  <li>Detect and prevent fraud or abuse</li>
+  <li>Comply with legal obligations</li>
+</ul>
+
+<h2>Data Sharing and Disclosure</h2>
+<p>We do not sell your personal information. We may share your information in the following circumstances:</p>
+<ul>
+  <li><strong>Service Providers:</strong> With third-party service providers who help us operate our website and conduct our business</li>
+  <li><strong>Legal Requirements:</strong> When required by law or to protect our rights</li>
+  <li><strong>Business Transfers:</strong> In connection with a merger, acquisition, or sale of assets</li>
+</ul>
+
+<h2>Your Rights</h2>
+<p>Depending on your location, you may have the following rights:</p>
+<ul>
+  <li>Access to your personal information</li>
+  <li>Correction of inaccurate information</li>
+  <li>Deletion of your information</li>
+  <li>Opt-out of marketing communications</li>
+  <li>Data portability</li>
+</ul>
+
+<h2>Cookies and Tracking</h2>
+<p>We use cookies to improve your browsing experience. You can control cookies through your browser settings, though this may affect website functionality.</p>
+
+<h2>Data Security</h2>
+<p>We implement appropriate technical and organizational measures to protect your personal information. However, no method of transmission over the internet is 100% secure.</p>
+
+<h2>Children's Privacy</h2>
+<p>Our website is not intended for children under 13. We do not knowingly collect personal information from children.</p>
+
+<h2>Changes to This Policy</h2>
+<p>We may update this Privacy Policy from time to time. We will notify you of any changes by posting the new policy on this page and updating the "Last Updated" date.</p>
+
+<h2>Contact Us</h2>
+<p>If you have questions about this Privacy Policy, please contact us at:</p>
+<p><strong>Email:</strong> <a href="mailto:privacy@aitechnews.com">privacy@aitechnews.com</a></p>`,
+          metaTitle: 'Privacy Policy - AI Tech News',
+          metaDescription: 'Read AI Tech News privacy policy to understand how we collect, use, and protect your personal information.',
+        },
+      }),
+      prisma.staticPage.upsert({
+        where: { slug: 'terms' },
+        update: {},
+        create: {
+          title: 'Terms of Service',
+          slug: 'terms',
+          content: `<h2>Terms of Service</h2>
+<p><strong>Last Updated:</strong> ${new Date().toLocaleDateString()}</p>
+
+<p>Welcome to AI Tech News. These Terms of Service ("Terms") govern your access to and use of our website and services. By accessing or using our website, you agree to be bound by these Terms.</p>
+
+<h2>Acceptance of Terms</h2>
+<p>By accessing or using AI Tech News, you acknowledge that you have read, understood, and agree to be bound by these Terms and our Privacy Policy. If you do not agree with these Terms, please do not use our website.</p>
+
+<h2>Use of the Website</h2>
+<h3>Permitted Use</h3>
+<p>You may use our website for personal, non-commercial purposes. You agree to:</p>
+<ul>
+  <li>Use the website in compliance with all applicable laws and regulations</li>
+  <li>Respect the intellectual property rights of others</li>
+  <li>Not interfere with or disrupt the website's operation</li>
+  <li>Not attempt to gain unauthorized access to any part of the website</li>
+</ul>
+
+<h3>Prohibited Activities</h3>
+<p>You agree not to:</p>
+<ul>
+  <li>Use the website for any illegal or unauthorized purpose</li>
+  <li>Transmit any harmful code, viruses, or malicious software</li>
+  <li>Engage in any form of data mining, scraping, or harvesting</li>
+  <li>Impersonate any person or entity</li>
+  <li>Post false, misleading, or defamatory content</li>
+  <li>Violate any applicable laws or regulations</li>
+</ul>
+
+<h2>Content and Intellectual Property</h2>
+<h3>Our Content</h3>
+<p>All content on AI Tech News, including articles, images, logos, and design elements, is owned by us or our licensors and is protected by copyright, trademark, and other intellectual property laws.</p>
+
+<h3>User-Generated Content</h3>
+<p>If you post comments or other content on our website, you grant us a non-exclusive, royalty-free license to use, modify, and display that content. You represent that you have the right to grant this license.</p>
+
+<h3>Attribution</h3>
+<p>You may share our articles with proper attribution. You may not republish our content without permission, except for brief excerpts for commentary or criticism.</p>
+
+<h2>Newsletter and Subscriptions</h2>
+<p>By subscribing to our newsletter, you agree to receive periodic emails from us. You can unsubscribe at any time using the link provided in our emails.</p>
+
+<h2>Third-Party Links</h2>
+<p>Our website may contain links to third-party websites. We are not responsible for the content, privacy practices, or terms of service of these external sites.</p>
+
+<h2>Disclaimer of Warranties</h2>
+<p>Our website is provided "as is" and "as available" without warranties of any kind, either express or implied. We do not guarantee that the website will be uninterrupted, error-free, or secure.</p>
+
+<h2>Limitation of Liability</h2>
+<p>To the fullest extent permitted by law, AI Tech News shall not be liable for any indirect, incidental, special, consequential, or punitive damages arising from your use of the website.</p>
+
+<h2>Indemnification</h2>
+<p>You agree to indemnify and hold harmless AI Tech News and its affiliates from any claims, damages, or expenses arising from your use of the website or violation of these Terms.</p>
+
+<h2>Modifications to Terms</h2>
+<p>We reserve the right to modify these Terms at any time. We will notify users of significant changes by posting the updated Terms on this page. Your continued use of the website after changes constitutes acceptance of the new Terms.</p>
+
+<h2>Termination</h2>
+<p>We reserve the right to suspend or terminate your access to the website at any time, with or without cause or notice, for any reason, including violation of these Terms.</p>
+
+<h2>Governing Law</h2>
+<p>These Terms shall be governed by and construed in accordance with the laws of the jurisdiction in which AI Tech News operates, without regard to its conflict of law provisions.</p>
+
+<h2>Contact Information</h2>
+<p>If you have questions about these Terms, please contact us at:</p>
+<p><strong>Email:</strong> <a href="mailto:legal@aitechnews.com">legal@aitechnews.com</a></p>
+
+<h2>Severability</h2>
+<p>If any provision of these Terms is found to be unenforceable, the remaining provisions will remain in full effect.</p>`,
+          metaTitle: 'Terms of Service - AI Tech News',
+          metaDescription: 'Read the Terms of Service for AI Tech News to understand the rules and guidelines for using our website.',
+        },
+      }),
+    ])
+  } catch (error) {
+    if (!error.message?.includes('Unique constraint')) {
+      console.warn('Warning creating static pages:', error.message)
+    }
+  }
+
+  console.log('✅ Seeded: settings, editors, categories, articles, sponsored banners, subscribers, comments, scheduled articles, and static pages')
   console.log(`✅ Created ${await prisma.article.count()} articles`)
   console.log(`✅ Created ${await prisma.category.count()} categories`)
   console.log(`✅ Created ${await prisma.editor.count()} editors`)
+  console.log(`✅ Created ${await prisma.sponsoredBanner.count()} sponsored banners`)
+  console.log(`✅ Created ${await prisma.subscriber.count()} subscribers`)
+  console.log(`✅ Created ${await prisma.comment.count()} comments`)
+  console.log(`✅ Created ${await prisma.staticPage.count()} static pages`)
 }
 
 main()

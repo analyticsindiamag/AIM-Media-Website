@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import { NextResponse } from 'next/server'
+import { getArticleUrl } from '@/lib/article-url'
 
 export async function GET() {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
@@ -27,11 +28,13 @@ export async function GET() {
     <atom:link href="${baseUrl}/rss.xml" rel="self" type="application/rss+xml"/>
     ${articles
       .map(
-        (article) => `
+        (article) => {
+          const articleUrl = getArticleUrl(article)
+          return `
     <item>
       <title><![CDATA[${article.title}]]></title>
-      <link>${baseUrl}/article/${article.slug}</link>
-      <guid>${baseUrl}/article/${article.slug}</guid>
+      <link>${baseUrl}${articleUrl}</link>
+      <guid>${baseUrl}${articleUrl}</guid>
       <description><![CDATA[${article.excerpt || ''}]]></description>
       <pubDate>${article.publishedAt?.toUTCString() || new Date().toUTCString()}</pubDate>
       <author>${article.editor.name}</author>
@@ -42,6 +45,7 @@ export async function GET() {
           : ''
       }
     </item>`
+        }
       )
       .join('')}
   </channel>

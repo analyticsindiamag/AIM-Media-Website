@@ -1,5 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import type { MetadataRoute } from 'next'
+import { getArticleUrl } from '@/lib/article-url'
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
@@ -7,9 +8,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // Get all published articles
   const articles = await prisma.article.findMany({
     where: { published: true },
+    include: {
+      category: true,
+    },
     select: {
       slug: true,
       updatedAt: true,
+      category: {
+        select: {
+          slug: true,
+        },
+      },
     },
   })
 
@@ -22,7 +31,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   })
 
   const articleUrls = articles.map((article) => ({
-    url: `${baseUrl}/article/${article.slug}`,
+    url: `${baseUrl}${getArticleUrl(article)}`,
     lastModified: article.updatedAt,
     changeFrequency: 'weekly' as const,
     priority: 0.8,

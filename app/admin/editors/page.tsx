@@ -18,6 +18,7 @@ interface Editor {
 export default function EditorsPage() {
   const [editors, setEditors] = useState<Editor[]>([])
   const [loading, setLoading] = useState(false)
+  const [editingId, setEditingId] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -40,17 +41,22 @@ export default function EditorsPage() {
     setLoading(true)
 
     try {
-      const response = await fetch('/api/editors', {
-        method: 'POST',
+      const url = editingId ? `/api/editors/${editingId}` : '/api/editors'
+      const method = editingId ? 'PUT' : 'POST'
+      
+      const response = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       })
 
       if (response.ok) {
         setFormData({ name: '', email: '', bio: '', avatar: '' })
+        setEditingId(null)
         fetchEditors()
       } else {
-        alert('Failed to create editor')
+        const error = await response.json()
+        alert(`Failed: ${error.error || 'Unknown error'}`)
       }
     } catch (_error) {
       alert('An error occurred')
@@ -59,14 +65,31 @@ export default function EditorsPage() {
     }
   }
 
+  const handleEdit = (editor: Editor) => {
+    setFormData({
+      name: editor.name,
+      email: editor.email,
+      bio: editor.bio || '',
+      avatar: editor.avatar || '',
+    })
+    setEditingId(editor.id)
+  }
+
+  const handleCancel = () => {
+    setFormData({ name: '', email: '', bio: '', avatar: '' })
+    setEditingId(null)
+  }
+
   return (
     <div>
       <h1 className="text-3xl font-bold mb-8">Editors / Authors</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Add Editor Form */}
+        {/* Add/Edit Editor Form */}
         <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-xl font-bold mb-4">Add New Editor</h2>
+          <h2 className="text-xl font-bold mb-4">
+            {editingId ? 'Edit Editor' : 'Add New Editor'}
+          </h2>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <Label htmlFor="name">Name *</Label>
@@ -114,9 +137,16 @@ export default function EditorsPage() {
               onChange={(url) => setFormData({ ...formData, avatar: url })}
             />
 
+            <div className="flex gap-2">
             <Button type="submit" disabled={loading}>
-              {loading ? 'Creating...' : 'Create Editor'}
+                {loading ? (editingId ? 'Updating...' : 'Creating...') : (editingId ? 'Update Editor' : 'Create Editor')}
+              </Button>
+              {editingId && (
+                <Button type="button" variant="outline" onClick={handleCancel}>
+                  Cancel
             </Button>
+              )}
+            </div>
           </form>
         </div>
 
@@ -135,7 +165,16 @@ export default function EditorsPage() {
                   {editor.bio && (
                     <p className="text-sm mt-2">{editor.bio}</p>
                   )}
-                  <div className="mt-3">
+                  {editor.avatar && (
+                    <img src={editor.avatar} alt={editor.name} className="w-16 h-16 rounded-full mt-2 object-cover" />
+                  )}
+                  <div className="mt-3 flex gap-3">
+                    <button
+                      className="text-blue-600 text-sm hover:underline"
+                      onClick={() => handleEdit(editor)}
+                    >
+                      Edit
+                    </button>
                     <button
                       className="text-red-600 text-sm hover:underline"
                       onClick={async () => {
@@ -143,6 +182,9 @@ export default function EditorsPage() {
                         const res = await fetch(`/api/editors?id=${editor.id}`, { method: 'DELETE' })
                         if (res.ok) {
                           setEditors((prev) => prev.filter((e) => e.id !== editor.id))
+                          if (editingId === editor.id) {
+                            handleCancel()
+                          }
                         } else {
                           alert('Failed to delete editor')
                         }

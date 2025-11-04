@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import { Plus } from 'lucide-react'
+import { getArticleUrl } from '@/lib/article-url'
 
 interface Article {
   id: string
@@ -13,6 +14,7 @@ interface Article {
   views: number
   category: {
     name: string
+    slug: string
   }
   editor: {
     name: string
@@ -164,7 +166,7 @@ export default function ArticlesPage() {
                   </td>
                   <td className="py-3 px-4 text-right space-x-2">
                     <Link
-                      href={`/article/${article.slug}`}
+                      href={getArticleUrl(article)}
                       target="_blank"
                       className="text-sm text-blue-600 hover:underline"
                     >

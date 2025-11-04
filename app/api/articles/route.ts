@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
     const wordCount = String(content).replace(/<[^>]*>/g, '').split(/\s+/).filter(Boolean).length
     const readTime = Math.ceil(wordCount / 200)
 
-    // If setting featured, unset others first
+    // If setting featured, unset others first (excluding current article since it doesn't exist yet)
     if (featured) {
       await prisma.article.updateMany({ data: { featured: false }, where: { featured: true } })
     }

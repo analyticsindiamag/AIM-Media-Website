@@ -5,6 +5,7 @@ import Link from 'next/link'
 import type { Metadata } from 'next'
 import { format } from 'date-fns'
 import { Twitter, Mail } from 'lucide-react'
+import { getArticleUrl } from '@/lib/article-url'
 
 interface PageProps {
   params: Promise<{
@@ -88,8 +89,35 @@ export default async function EditorPage({ params }: PageProps) {
     notFound()
   }
 
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+
+  // Person Schema for Editor
+  const personSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Person',
+    name: editor.name,
+    url: `${baseUrl}/editor/${editor.slug}`,
+    image: editor.avatar || undefined,
+    description: editor.bio || undefined,
+    email: editor.email || undefined,
+    jobTitle: 'Reporter',
+    worksFor: {
+      '@type': 'Organization',
+      name: 'AI Tech News',
+    },
+    sameAs: [], // Can be populated with social media URLs
+  }
+
   return (
-    <div className="bg-white min-h-screen">
+    <>
+      {/* Person Schema JSON-LD */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify(personSchema),
+        }}
+      />
+      <div className="bg-white min-h-screen">
       <div className="wsj-container py-8 md:py-12">
         {/* Editor Header - WSJ Style */}
         <div className="mb-12 pb-8 border-b border-[var(--wsj-border-light)]">
@@ -164,21 +192,23 @@ export default async function EditorPage({ params }: PageProps) {
             </h2>
             
             <div className="space-y-8">
-              {articles.map((article) => (
+              {articles.map((article) => {
+                const articleUrl = getArticleUrl(article)
+                return (
                 <article key={article.id} className="group">
-                  <Link href={`/article/${article.slug}`} className="flex flex-col md:flex-row gap-4 md:gap-6">
+                  <div className="flex flex-col md:flex-row gap-4 md:gap-6">
                     {/* Article Image */}
                     {article.featuredImage && (
-                      <div className="relative w-full md:w-[200px] h-[200px] md:h-[150px] flex-shrink-0 overflow-hidden">
+                      <Link href={articleUrl} className="block relative w-full md:w-[200px] h-[200px] md:h-[150px] flex-shrink-0 overflow-hidden">
                         <Image
                           src={article.featuredImage}
-                          alt={article.title}
+                          alt={article.featuredImageAltText || article.title}
                           fill
                           loading="lazy"
                           className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
                           sizes="(max-width: 768px) 100vw, 200px"
                         />
-                      </div>
+                      </Link>
                     )}
                     
                     {/* Article Content */}
@@ -189,15 +219,19 @@ export default async function EditorPage({ params }: PageProps) {
                       </div>
                       
                       {/* Title */}
-                      <h3 className="font-serif font-bold text-[var(--wsj-font-size-2xl)] md:text-[var(--wsj-font-size-3xl)] leading-[var(--wsj-line-height-normal)] text-[var(--wsj-text-black)] group-hover:underline mb-2">
-                        {article.title}
-                      </h3>
+                      <Link href={articleUrl}>
+                        <h3 className="font-serif font-bold text-[var(--wsj-font-size-2xl)] md:text-[var(--wsj-font-size-3xl)] leading-[var(--wsj-line-height-normal)] text-[var(--wsj-text-black)] group-hover:underline mb-2">
+                          {article.title}
+                        </h3>
+                      </Link>
                       
                       {/* Excerpt */}
                       {article.excerpt && (
-                        <p className="text-[var(--wsj-font-size-md)] text-[var(--wsj-text-dark-gray)] mb-3 font-serif leading-[var(--wsj-line-height-loose)] line-clamp-2">
-                          {article.excerpt}
-                        </p>
+                        <Link href={articleUrl} className="block">
+                          <p className="text-[var(--wsj-font-size-md)] text-[var(--wsj-text-dark-gray)] mb-3 font-serif leading-[var(--wsj-line-height-loose)] line-clamp-2">
+                            {article.excerpt}
+                          </p>
+                        </Link>
                       )}
                       
                       {/* Author and Date */}
@@ -211,13 +245,14 @@ export default async function EditorPage({ params }: PageProps) {
                         )}
                       </div>
                     </div>
-                  </Link>
+                  </div>
                   
                   {article.id !== articles[articles.length - 1]?.id && (
                     <div className="mt-8 pt-8 border-t border-[var(--wsj-border-light)]" />
                   )}
                 </article>
-              ))}
+                )
+              })}
             </div>
           </div>
         )}
@@ -231,6 +266,7 @@ export default async function EditorPage({ params }: PageProps) {
           </div>
         )}
       </div>
-    </div>
+      </div>
+    </>
   )
 }

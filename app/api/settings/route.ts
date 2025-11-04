@@ -17,10 +17,30 @@ export async function GET() {
 export async function PUT(request: NextRequest) {
   try {
     const body = await request.json()
-    const { siteName, logoUrl, navLinksJson, footerLinksJson, subscribeCta } = body
+    const { 
+      siteName, 
+      logoUrl, 
+      navLinksJson, 
+      footerLinksJson, 
+      subscribeCta,
+      headerBarLeftText,
+      headerBarLeftLink,
+      headerBarRightText,
+      headerBarRightLink
+    } = body
     const s = await prisma.settings.update({
       where: { id: 'default' },
-      data: { siteName, logoUrl, navLinksJson, footerLinksJson, subscribeCta },
+      data: { 
+        siteName, 
+        logoUrl, 
+        navLinksJson, 
+        footerLinksJson, 
+        subscribeCta,
+        headerBarLeftText,
+        headerBarLeftLink,
+        headerBarRightText,
+        headerBarRightLink
+      },
     })
     return NextResponse.json(s)
   } catch (e) {

@@ -15,6 +15,10 @@ export default function SettingsPage() {
     navLinksJson: '',
     footerLinksJson: '',
     subscribeCta: '',
+    headerBarLeftText: '',
+    headerBarLeftLink: '',
+    headerBarRightText: '',
+    headerBarRightLink: '',
   })
 
   useEffect(() => {
@@ -25,6 +29,10 @@ export default function SettingsPage() {
         navLinksJson: s.navLinksJson || '',
         footerLinksJson: s.footerLinksJson || '',
         subscribeCta: s.subscribeCta || '',
+        headerBarLeftText: s.headerBarLeftText || '',
+        headerBarLeftLink: s.headerBarLeftLink || '',
+        headerBarRightText: s.headerBarRightText || '',
+        headerBarRightLink: s.headerBarRightLink || '',
       })
     })
   }, [])
@@ -82,6 +90,49 @@ export default function SettingsPage() {
           <Label htmlFor="footerLinksJson">Footer Links JSON</Label>
           <Textarea id="footerLinksJson" rows={4} value={form.footerLinksJson} onChange={(e) => setForm({ ...form, footerLinksJson: e.target.value })} placeholder='[{"label":"Privacy","href":"/privacy"}]' />
         </div>
+
+        <div className="pt-6 border-t">
+          <h2 className="text-xl font-bold mb-4">Header Bar Settings</h2>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="headerBarLeftText">Left Side Text</Label>
+              <Input 
+                id="headerBarLeftText" 
+                value={form.headerBarLeftText} 
+                onChange={(e) => setForm({ ...form, headerBarLeftText: e.target.value })} 
+                placeholder="e.g., AI"
+              />
+            </div>
+            <div>
+              <Label htmlFor="headerBarLeftLink">Left Side Link URL (optional)</Label>
+              <Input 
+                id="headerBarLeftLink" 
+                value={form.headerBarLeftLink} 
+                onChange={(e) => setForm({ ...form, headerBarLeftLink: e.target.value })} 
+                placeholder="e.g., /category/ai or https://..."
+              />
+            </div>
+            <div>
+              <Label htmlFor="headerBarRightText">Right Side Text</Label>
+              <Input 
+                id="headerBarRightText" 
+                value={form.headerBarRightText} 
+                onChange={(e) => setForm({ ...form, headerBarRightText: e.target.value })} 
+                placeholder="e.g., AI TECH NEWS | Tech"
+              />
+            </div>
+            <div>
+              <Label htmlFor="headerBarRightLink">Right Side Link URL (optional)</Label>
+              <Input 
+                id="headerBarRightLink" 
+                value={form.headerBarRightLink} 
+                onChange={(e) => setForm({ ...form, headerBarRightLink: e.target.value })} 
+                placeholder="e.g., / or https://..."
+              />
+            </div>
+          </div>
+        </div>
+
         <div className="pt-4">
           <Button onClick={save} disabled={loading}>{loading ? 'Saving...' : 'Save Settings'}</Button>
         </div>

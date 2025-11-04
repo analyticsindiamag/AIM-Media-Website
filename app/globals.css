@@ -86,7 +86,7 @@
   --wsj-container-padding-x: 1rem;
   --wsj-container-padding-x-md: 2rem;
   
-  --wsj-article-max-width: 680px;
+  --wsj-article-max-width: 1200px; /* Increased for better readability */
   
   /* === HEADER === */
   --wsj-header-top-height: 32px;
@@ -321,12 +321,27 @@
   margin-right: auto; 
   padding-left: var(--wsj-container-padding-x);
   padding-right: var(--wsj-container-padding-x);
+  width: 100%;
 }
 
 @media (min-width: 768px) {
   .article-container {
     padding-left: var(--wsj-container-padding-x-md);
     padding-right: var(--wsj-container-padding-x-md);
+  }
+}
+
+@media (min-width: 1024px) {
+  .article-container {
+    padding-left: 3rem; /* 48px - more space on larger screens */
+    padding-right: 3rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .article-container {
+    padding-left: 4rem; /* 64px - even more space on xl screens */
+    padding-right: 4rem;
   }
 }
 
