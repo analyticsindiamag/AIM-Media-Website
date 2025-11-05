@@ -1,0 +1,38 @@
+name: Build and Push Docker Image to ECR
+
+on:
+  push:
+    branches:
+      - main   # or master — adjust as per your default branch
+
+jobs:
+  build:
+    name: Build & Push Image
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-south-1
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        run: |
+          aws ecr get-login-password --region ap-south-1 | docker login --username AWS --password-stdin 856394422078.dkr.ecr.ap-south-1.amazonaws.com
+
+      - name: Build Docker image for Linux (amd64)
+        run: |
+          docker buildx create --use || true
+          docker buildx build --platform linux/amd64 -t ai-tech-news:latest --load .
+
+      - name: Tag image
+        run: docker tag ai-tech-news:latest 856394422078.dkr.ecr.ap-south-1.amazonaws.com/ai-tech-news:latest
+
+      - name: Push to Amazon ECR
+        run: docker push 856394422078.dkr.ecr.ap-south-1.amazonaws.com/ai-tech-news:latest
