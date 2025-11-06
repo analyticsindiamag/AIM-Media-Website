@@ -12,6 +12,7 @@ interface Article {
   slug: string
   published: boolean
   views: number
+  scheduledAt?: string | null
   category: {
     name: string
     slug: string
@@ -144,15 +145,26 @@ export default function ArticlesPage() {
                     <span className="text-sm">{article.editor.name}</span>
                   </td>
                   <td className="py-3 px-4">
-                    <span
-                      className={`inline-block px-2 py-1 rounded text-xs font-medium ${
-                        article.published
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-yellow-100 text-yellow-800'
-                      }`}
-                    >
-                      {article.published ? 'Published' : 'Draft'}
-                    </span>
+                    {article.scheduledAt && !article.published ? (
+                      <div className="flex flex-col gap-1">
+                        <span className="inline-block px-2 py-1 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                          Scheduled
+                        </span>
+                        <span className="text-xs text-gray-500">
+                          {new Date(article.scheduledAt).toLocaleString()}
+                        </span>
+                      </div>
+                    ) : (
+                      <span
+                        className={`inline-block px-2 py-1 rounded text-xs font-medium ${
+                          article.published
+                            ? 'bg-green-100 text-green-800'
+                            : 'bg-yellow-100 text-yellow-800'
+                        }`}
+                      >
+                        {article.published ? 'Published' : 'Draft'}
+                      </span>
+                    )}
                   </td>
                   <td className="py-3 px-4">
                     {article.featured ? (

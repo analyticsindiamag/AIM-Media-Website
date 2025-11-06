@@ -52,7 +52,9 @@ async function main() {
   const [editorA, editorB, editorC, editorD] = await Promise.all([
     prisma.editor.upsert({
       where: { email: 'sara@aitechnews.com' },
-      update: {},
+      update: {
+        slug: generateSlug('Sara Patel'), // Ensure slug is set on update too
+      },
       create: {
         name: 'Sara Patel',
         email: 'sara@aitechnews.com',
@@ -63,7 +65,9 @@ async function main() {
     }),
     prisma.editor.upsert({
       where: { email: 'luis@aitechnews.com' },
-      update: {},
+      update: {
+        slug: generateSlug('Luis Hernandez'), // Ensure slug is set on update too
+      },
       create: {
         name: 'Luis Hernandez',
         email: 'luis@aitechnews.com',
@@ -74,7 +78,9 @@ async function main() {
     }),
     prisma.editor.upsert({
       where: { email: 'emma@aitechnews.com' },
-      update: {},
+      update: {
+        slug: generateSlug('Emma Chen'), // Ensure slug is set on update too
+      },
       create: {
         name: 'Emma Chen',
         email: 'emma@aitechnews.com',
@@ -85,7 +91,9 @@ async function main() {
     }),
     prisma.editor.upsert({
       where: { email: 'michael@aitechnews.com' },
-      update: {},
+      update: {
+        slug: generateSlug('Michael Thompson'), // Ensure slug is set on update too
+      },
       create: {
         name: 'Michael Thompson',
         email: 'michael@aitechnews.com',
