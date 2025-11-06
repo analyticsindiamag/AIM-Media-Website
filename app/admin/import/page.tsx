@@ -1,8 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { Upload, CheckCircle2, XCircle, AlertCircle, ChevronDown, ChevronUp } from 'lucide-react'
+import { Upload, CheckCircle2, XCircle, AlertCircle, ChevronDown, ChevronUp, Globe, ArrowRight } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import Link from 'next/link'
 
 interface ImportResult {
   summary: {
@@ -66,9 +67,34 @@ export default function ImportPage() {
   return (
     <div className="max-w-2xl">
       <h1 className="text-3xl font-bold mb-4">Import from WordPress</h1>
-      <p className="text-muted-foreground mb-8">
-        Upload a WordPress export CSV file to import your articles. The importer automatically recognizes WordPress CSV column names (Title, Content, Categories, Image URL, Author Email, etc.) and maps them to our database schema.
-      </p>
+      
+      {/* REST API Import Option */}
+      <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+        <div className="flex items-start justify-between gap-4">
+          <div className="flex-1">
+            <div className="flex items-center gap-2 mb-2">
+              <Globe className="w-5 h-5 text-blue-600" />
+              <h3 className="font-semibold text-blue-900">Import via REST API</h3>
+            </div>
+            <p className="text-sm text-blue-800 mb-3">
+              Import directly from your WordPress site using the REST API. Ideal for large migrations without manual CSV exports.
+            </p>
+            <Link href="/admin/import/rest">
+              <Button variant="outline" className="bg-white hover:bg-blue-100">
+                Use REST API Import
+                <ArrowRight className="w-4 h-4 ml-2" />
+              </Button>
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      <div className="mb-6 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+        <h2 className="text-lg font-semibold mb-2">CSV Import</h2>
+        <p className="text-sm text-muted-foreground">
+          Upload a WordPress export CSV file to import your articles. The importer automatically recognizes WordPress CSV column names (Title, Content, Categories, Image URL, Author Email, etc.) and maps them to our database schema.
+        </p>
+      </div>
 
       <div className="bg-white p-6 rounded-lg shadow">
         <h2 className="text-xl font-bold mb-4">CSV Format</h2>
