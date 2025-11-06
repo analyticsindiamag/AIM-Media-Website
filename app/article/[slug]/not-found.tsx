@@ -18,13 +18,6 @@ export default async function NotFound() {
     where: { published: true },
     orderBy: { views: 'desc' },
     take: 5,
-    include: {
-      category: {
-        select: {
-          slug: true,
-        },
-      },
-    },
     select: {
       title: true,
       slug: true,
