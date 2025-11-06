@@ -16,14 +16,21 @@ interface PageProps {
 
 // Generate static params for all published articles
 export async function generateStaticParams() {
-  const articles = await prisma.article.findMany({
-    where: { published: true },
-    select: { slug: true },
-  })
+  try {
+    const articles = await prisma.article.findMany({
+      where: { published: true },
+      select: { slug: true },
+    })
 
-  return articles.map((article) => ({
-    slug: article.slug,
-  }))
+    return articles.map((article) => ({
+      slug: article.slug,
+    }))
+  } catch (error) {
+    // During build, database might not be available
+    // Return empty array to allow build to continue
+    console.warn('Failed to generate static params for article/[slug]:', error)
+    return []
+  }
 }
 
 // Generate metadata for SEO

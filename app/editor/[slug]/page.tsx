@@ -15,13 +15,20 @@ interface PageProps {
 
 // Generate static params for all editors
 export async function generateStaticParams() {
-  const editors = await prisma.editor.findMany({
-    select: { slug: true },
-  })
+  try {
+    const editors = await prisma.editor.findMany({
+      select: { slug: true },
+    })
 
-  return editors.map((editor) => ({
-    slug: editor.slug,
-  }))
+    return editors.map((editor) => ({
+      slug: editor.slug,
+    }))
+  } catch (error) {
+    // During build, database might not be available
+    // Return empty array to allow build to continue
+    console.warn('Failed to generate static params for editor/[slug]:', error)
+    return []
+  }
 }
 
 // Generate metadata

@@ -17,17 +17,24 @@ interface PageProps {
 
 // Generate static params for all published articles in WordPress format
 export async function generateStaticParams() {
-  const articles = await prisma.article.findMany({
-    where: { published: true },
-    include: {
-      category: true,
-    },
-  })
+  try {
+    const articles = await prisma.article.findMany({
+      where: { published: true },
+      include: {
+        category: true,
+      },
+    })
 
-  return articles.map((article) => ({
-    category: article.category.slug,
-    slug: article.slug,
-  }))
+    return articles.map((article) => ({
+      category: article.category.slug,
+      slug: article.slug,
+    }))
+  } catch (error) {
+    // During build, database might not be available
+    // Return empty array to allow build to continue
+    console.warn('Failed to generate static params for [category]/[slug]:', error)
+    return []
+  }
 }
 
 // Generate metadata for SEO

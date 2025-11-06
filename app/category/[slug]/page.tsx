@@ -15,13 +15,20 @@ interface PageProps {
 
 // Generate static params for all categories
 export async function generateStaticParams() {
-  const categories = await prisma.category.findMany({
-    select: { slug: true },
-  })
+  try {
+    const categories = await prisma.category.findMany({
+      select: { slug: true },
+    })
 
-  return categories.map((category) => ({
-    slug: category.slug,
-  }))
+    return categories.map((category) => ({
+      slug: category.slug,
+    }))
+  } catch (error) {
+    // During build, database might not be available
+    // Return empty array to allow build to continue
+    console.warn('Failed to generate static params for category/[slug]:', error)
+    return []
+  }
 }
 
 // Generate metadata
