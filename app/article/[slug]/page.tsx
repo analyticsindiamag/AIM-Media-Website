@@ -4,9 +4,8 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { format } from 'date-fns'
 import type { Metadata } from 'next'
-import { Share2, Type, MessageCircle, MoreVertical } from 'lucide-react'
-import { ShareButtons } from '@/components/share-buttons'
 import { AdBannerFetcher } from '@/components/ad-banner-fetcher'
+import { ArticleInteractiveBar } from '@/components/article-interactive-bar'
 import { getArticleUrl } from '@/lib/article-url'
 
 interface PageProps {

@@ -10,6 +10,7 @@ interface ArticleCardProps {
     title: string
     excerpt?: string | null
     featuredImage?: string | null
+    featuredImageAltText?: string | null
     publishedAt?: Date | null
     readTime?: number | null
     category: {
