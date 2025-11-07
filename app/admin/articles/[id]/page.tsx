@@ -26,6 +26,7 @@ export default function EditArticlePage() {
     excerpt: '',
     content: '',
     featuredImage: '',
+    featuredImageMediaId: null as string | null,
     categoryId: '',
     editorId: '',
     published: false,
@@ -59,6 +60,7 @@ export default function EditArticlePage() {
           excerpt: article.excerpt || '',
           content: article.content || '',
           featuredImage: article.featuredImage || '',
+          featuredImageMediaId: article.featuredImageMediaId || null,
           categoryId: article.categoryId,
           editorId: article.editorId,
           published: !!article.published,
@@ -82,7 +84,11 @@ export default function EditArticlePage() {
       const res = await fetch(`/api/articles/${id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...formData, published: publish }),
+        body: JSON.stringify({ 
+          ...formData, 
+          published: publish,
+          featuredImageMediaId: formData.featuredImageMediaId || undefined,
+        }),
       })
       if (res.ok) {
         router.push('/admin/articles')
@@ -160,7 +166,12 @@ export default function EditArticlePage() {
             </SelectContent>
           </Select>
         </div>
-        <ImageUpload label="Featured Image" value={formData.featuredImage} onChange={(url) => setFormData({ ...formData, featuredImage: url })} />
+        <ImageUpload 
+          label="Featured Image" 
+          value={formData.featuredImage} 
+          mediaId={formData.featuredImageMediaId}
+          onChange={(url, mediaId) => setFormData({ ...formData, featuredImage: url, featuredImageMediaId: mediaId || null })} 
+        />
         <div>
           <Label>Content *</Label>
           <RichTextEditor content={formData.content} onChange={(html) => setFormData({ ...formData, content: html })} />

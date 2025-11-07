@@ -40,36 +40,42 @@ model Editor {
 }
 
 model Article {
-  id                       String    @id @default(cuid())
+  id                       String       @id @default(cuid())
   title                    String
-  slug                     String    @unique
+  slug                     String       @unique
   excerpt                  String?
   content                  String
   featuredImage            String?
+  featuredImageMediaId     String?
+  featuredImageMedia       Media?        @relation(fields: [featuredImageMediaId], references: [id], onDelete: SetNull)
   featuredImageTitle       String? // Image title for SEO
   featuredImageCaption     String? // Image caption
   featuredImageDescription String? // Image description
   featuredImageAltText     String? // Image alt text for accessibility and SEO
-  published                Boolean   @default(false)
+  published                Boolean      @default(false)
   publishedAt              DateTime?
-  scheduledAt              DateTime?
-  views                    Int       @default(0)
-  readTime                 Int       @default(5) // in minutes
+  scheduledAt               DateTime?
+  views                    Int          @default(0)
+  likesCount               Int          @default(0) // Cached count of likes
+  readTime                 Int          @default(5) // in minutes
   metaTitle                String?
   metaDescription          String?
-  featured                 Boolean   @default(false)
-  categoryId               String
-  category                 Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  featured                 Boolean      @default(false)
+  categoryId                String
+  category                 Category     @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   editorId                 String
-  editor                   Editor    @relation(fields: [editorId], references: [id], onDelete: Cascade)
+  editor                   Editor        @relation(fields: [editorId], references: [id], onDelete: Cascade)
   comments                 Comment[]
-  createdAt                DateTime  @default(now())
-  updatedAt                DateTime  @updatedAt
+  likes                    Like[]
+  articleViews             ArticleView[]
+  createdAt                DateTime     @default(now())
+  updatedAt                DateTime     @updatedAt
 
   @@index([slug])
   @@index([published, publishedAt])
   @@index([scheduledAt])
   @@index([categoryId])
+  @@index([featuredImageMediaId])
   @@map("articles")
 }
 
@@ -77,6 +83,7 @@ model Comment {
   id        String   @id @default(cuid())
   content   String
   authorId  String?
+  author    User?    @relation(fields: [authorId], references: [id], onDelete: SetNull)
   articleId String
   article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
   approved  Boolean  @default(false)
@@ -84,6 +91,8 @@ model Comment {
   updatedAt DateTime @updatedAt
 
   @@index([articleId])
+  @@index([authorId])
+  @@index([approved])
   @@map("comments")
 }
 
@@ -91,9 +100,16 @@ model User {
   id        String   @id @default(cuid())
   email     String   @unique
   name      String?
+  googleId  String?  @unique
+  avatar    String?
+  provider  String?  @default("google") // OAuth provider
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  comments  Comment[]
+  likes     Like[]
+  views     ArticleView[]
 
+  @@index([googleId])
   @@map("users")
 }
 
@@ -151,4 +167,63 @@ model StaticPage {
 
   @@index([slug])
   @@map("static_pages")
+}
+
+model Media {
+  id        String    @id @default(cuid())
+  filename  String
+  mimeType  String
+  data      Bytes     // BLOB storage for image binary data
+  size      Int       // file size in bytes
+  altText   String?
+  title     String?
+  caption   String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  articles  Article[]
+
+  @@index([createdAt])
+  @@map("media")
+}
+
+model Like {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  articleId String
+  article   Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, articleId])
+  @@index([articleId])
+  @@index([userId])
+  @@map("likes")
+}
+
+model ArticleView {
+  id          String   @id @default(cuid())
+  userId      String?  // Nullable for anonymous users
+  user        User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  anonymousId String?  // Cookie-based ID for anonymous users
+  articleId   String
+  article     Article  @relation(fields: [articleId], references: [id], onDelete: Cascade)
+  viewedAt    DateTime @default(now())
+
+  @@index([articleId])
+  @@index([userId])
+  @@index([anonymousId])
+  @@index([viewedAt])
+  @@map("article_views")
+}
+
+model ArticleEmbedding {
+  id        String   @id @default(cuid())
+  articleId String   @unique
+  embedding String   // JSON string of embedding vector
+  model     String   @default("sentence-transformers/all-MiniLM-L6-v2")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([articleId])
+  @@map("article_embeddings")
 }

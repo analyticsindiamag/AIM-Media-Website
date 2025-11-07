@@ -29,6 +29,7 @@ export async function POST(request: NextRequest) {
       excerpt,
       content,
       featuredImage,
+      featuredImageMediaId,
       categoryId,
       editorId,
       published,
@@ -53,6 +54,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Slug already exists' }, { status: 409 })
     }
 
+    // Validate featuredImageMediaId if provided
+    if (featuredImageMediaId) {
+      const mediaExists = await prisma.media.findUnique({
+        where: { id: featuredImageMediaId },
+      })
+      if (!mediaExists) {
+        return NextResponse.json(
+          { error: 'Featured image media not found' },
+          { status: 404 }
+        )
+      }
+    }
+
     // Calculate read time (rough estimate: 200 words per minute)
     const wordCount = String(content).replace(/<[^>]*>/g, '').split(/\s+/).filter(Boolean).length
     const readTime = Math.ceil(wordCount / 200)
@@ -72,7 +86,8 @@ export async function POST(request: NextRequest) {
         slug: normalizedSlug,
         excerpt,
         content,
-        featuredImage,
+        featuredImage: featuredImageMediaId ? null : featuredImage,
+        featuredImageMediaId: featuredImageMediaId || null,
         categoryId,
         editorId,
         published: shouldPublish,
@@ -86,6 +101,7 @@ export async function POST(request: NextRequest) {
       include: {
         category: true,
         editor: true,
+        featuredImageMedia: true,
       },
     })
 

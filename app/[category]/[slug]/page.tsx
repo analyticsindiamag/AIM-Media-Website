@@ -218,6 +218,7 @@ export default async function WordPressPermalinkPage({ params }: PageProps) {
                 <ArticleInteractiveBar
                   url={`${baseUrl}${articleUrl}`}
                   title={article.title}
+                  articleSlug={slug}
                   variant="light"
                   readTime={article.readTime}
                 />
@@ -237,6 +238,7 @@ export default async function WordPressPermalinkPage({ params }: PageProps) {
                   <ArticleInteractiveBar
                       url={`${baseUrl}${articleUrl}`}
                       title={article.title}
+                      articleSlug={slug}
                     variant="default"
                     readTime={article.readTime}
                   />

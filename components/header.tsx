@@ -2,9 +2,10 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { Search, ChevronDown } from 'lucide-react'
+import { Search, ChevronDown, LogIn, LogOut, User } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
+import { useSession, signIn, signOut } from 'next-auth/react'
 import { getArticleUrl } from '@/lib/article-url'
 
 type Category = { id: string; name: string; slug: string }
@@ -22,6 +23,7 @@ type Article = {
 export function Header() {
   const pathname = usePathname()
   const router = useRouter()
+  const { data: session } = useSession()
   const [categories, setCategories] = useState<Category[]>([])
   const [logoUrl, setLogoUrl] = useState<string>('')
   const [siteName, setSiteName] = useState<string>('THE WALL STREET JOURNAL')
@@ -33,6 +35,7 @@ export function Header() {
   const [headerBarLeftLink, setHeaderBarLeftLink] = useState<string>('')
   const [headerBarRightText, setHeaderBarRightText] = useState<string>('')
   const [headerBarRightLink, setHeaderBarRightLink] = useState<string>('')
+  const [showUserMenu, setShowUserMenu] = useState(false)
 
   useEffect(() => {
     fetch('/api/categories')
@@ -100,6 +103,17 @@ export function Header() {
 
   // Hide header on admin routes
   if (pathname?.startsWith('/admin')) return null
+
+  // Close user menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = () => {
+      setShowUserMenu(false)
+    }
+    if (showUserMenu) {
+      document.addEventListener('click', handleClickOutside)
+      return () => document.removeEventListener('click', handleClickOutside)
+    }
+  }, [showUserMenu])
 
   const showHeaderBar = headerBarLeftText || headerBarRightText
 
@@ -176,8 +190,8 @@ export function Header() {
                 </div>
               )}
             </Link>
-            {/* Search button */}
-            <div className="flex-1 flex justify-end">
+            {/* Search and Auth buttons */}
+            <div className="flex-1 flex justify-end items-center gap-4">
               <button
                 onClick={() => setShowSearch(true)}
                 className="text-[var(--wsj-text-black)] hover:text-[var(--wsj-text-medium-gray)] transition-colors"
@@ -185,6 +199,66 @@ export function Header() {
               >
                 <Search className="w-5 h-5" />
               </button>
+              
+              {/* User Auth */}
+              {session?.user ? (
+                <div className="relative">
+                  <button
+                    onClick={() => setShowUserMenu(!showUserMenu)}
+                    className="flex items-center gap-2 text-[var(--wsj-text-black)] hover:text-[var(--wsj-text-medium-gray)] transition-colors"
+                    aria-label="User menu"
+                  >
+                    {session.user.image ? (
+                      <div className="relative w-8 h-8 rounded-full overflow-hidden">
+                        <Image
+                          src={session.user.image}
+                          alt={session.user.name || 'User'}
+                          fill
+                          className="object-cover"
+                          sizes="32px"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-[var(--wsj-bg-light-gray)] flex items-center justify-center">
+                        <User className="w-4 h-4 text-[var(--wsj-text-medium-gray)]" />
+                      </div>
+                    )}
+                    <span className="hidden md:inline text-sm font-sans">
+                      {session.user.name || session.user.email}
+                    </span>
+                  </button>
+                  {showUserMenu && (
+                    <div className="absolute right-0 mt-2 w-48 bg-white shadow-lg rounded border p-2 z-50">
+                      <div className="px-4 py-2 border-b border-[var(--wsj-border-light)]">
+                        <p className="text-sm font-medium text-[var(--wsj-text-black)] font-sans">
+                          {session.user.name || 'User'}
+                        </p>
+                        <p className="text-xs text-[var(--wsj-text-medium-gray)] font-sans">
+                          {session.user.email}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => {
+                          signOut({ callbackUrl: '/' })
+                          setShowUserMenu(false)
+                        }}
+                        className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm text-[var(--wsj-text-black)] transition-colors flex items-center gap-2 font-sans"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        Sign Out
+                      </button>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <button
+                  onClick={() => signIn('google', { callbackUrl: pathname || '/' })}
+                  className="flex items-center gap-2 px-4 py-2 text-sm text-[var(--wsj-text-black)] hover:text-[var(--wsj-text-medium-gray)] border border-[var(--wsj-border-light)] rounded transition-colors font-sans"
+                >
+                  <LogIn className="w-4 h-4" />
+                  <span className="hidden md:inline">Sign In</span>
+                </button>
+              )}
             </div>
           </div>
 

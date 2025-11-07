@@ -87,6 +87,9 @@ export default async function CategoryPage({ params }: PageProps) {
       include: {
         category: true,
         editor: true,
+        featuredImageMedia: {
+          select: { id: true },
+        },
       },
     }),
   ])
@@ -107,21 +110,26 @@ export default async function CategoryPage({ params }: PageProps) {
     mainEntity: {
       '@type': 'ItemList',
       numberOfItems: articles.length,
-      itemListElement: articles.map((article, index) => ({
-        '@type': 'ListItem',
-        position: index + 1,
-        item: {
-          '@type': 'NewsArticle',
-          headline: article.title,
-          url: `${baseUrl}/article/${article.slug}`,
-          image: article.featuredImage || undefined,
-          datePublished: article.publishedAt?.toISOString(),
-          author: {
-            '@type': 'Person',
-            name: article.editor.name,
+      itemListElement: articles.map((article, index) => {
+        const imageUrl = article.featuredImageMediaId
+          ? `${baseUrl}/api/media/${article.featuredImageMediaId}`
+          : article.featuredImage || undefined
+        return {
+          '@type': 'ListItem',
+          position: index + 1,
+          item: {
+            '@type': 'NewsArticle',
+            headline: article.title,
+            url: `${baseUrl}/article/${article.slug}`,
+            image: imageUrl,
+            datePublished: article.publishedAt?.toISOString(),
+            author: {
+              '@type': 'Person',
+              name: article.editor.name,
+            },
           },
-        },
-      })),
+        }
+      }),
     },
   }
 
@@ -180,14 +188,17 @@ export default async function CategoryPage({ params }: PageProps) {
             <div className="space-y-8">
               {articles.map((article) => {
                 const articleUrl = getArticleUrl(article)
+                const articleImageUrl = article.featuredImageMediaId
+                  ? `${baseUrl}/api/media/${article.featuredImageMediaId}`
+                  : article.featuredImage || null
                 return (
                 <article key={article.id} className="group">
                   <div className="flex flex-col md:flex-row gap-4 md:gap-6">
                     {/* Article Image */}
-                    {article.featuredImage && (
+                    {articleImageUrl && (
                       <Link href={articleUrl} className="block relative w-full md:w-[200px] h-[200px] md:h-[150px] flex-shrink-0 overflow-hidden">
                         <Image
-                          src={article.featuredImage}
+                          src={articleImageUrl}
                           alt={article.featuredImageAltText || article.title}
                           fill
                           loading="lazy"

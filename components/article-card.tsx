@@ -10,6 +10,7 @@ interface ArticleCardProps {
     title: string
     excerpt?: string | null
     featuredImage?: string | null
+    featuredImageMediaId?: string | null
     featuredImageAltText?: string | null
     publishedAt?: Date | null
     readTime?: number | null
@@ -35,14 +36,20 @@ export function ArticleCard({ article, size = 'medium', showExcerpt = false }: A
     : 'text-[var(--wsj-font-size-xl)] md:text-[var(--wsj-font-size-2xl)]'
 
   const articleUrl = getArticleUrl(article)
+  
+  // Get featured image URL - prefer media gallery, fallback to URL
+  // Use relative URL for same-domain API calls
+  const featuredImageUrl = article.featuredImageMediaId
+    ? `/api/media/${article.featuredImageMediaId}`
+    : article.featuredImage || null
 
   return (
     <article className="wsj-article-card group">
       <Link href={articleUrl} className="block">
-        {article.featuredImage && (
+        {featuredImageUrl && (
           <div className={`relative w-full overflow-hidden mb-4 image-frame ${imageHeight}`}>
             <Image
-              src={article.featuredImage}
+              src={featuredImageUrl}
               alt={article.featuredImageAltText || article.title}
               fill
               loading="lazy"

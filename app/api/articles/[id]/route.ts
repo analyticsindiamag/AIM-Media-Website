@@ -12,6 +12,16 @@ export async function GET(
       include: {
         category: true,
         editor: true,
+        featuredImageMedia: {
+          select: {
+            id: true,
+            filename: true,
+            mimeType: true,
+            altText: true,
+            title: true,
+            caption: true,
+          },
+        },
       },
     })
 
@@ -41,6 +51,7 @@ export async function PUT(
       excerpt,
       content,
       featuredImage,
+      featuredImageMediaId,
       categoryId,
       editorId,
       published,
@@ -91,6 +102,19 @@ export async function PUT(
       )
     }
 
+    // Validate featuredImageMediaId if provided
+    if (featuredImageMediaId) {
+      const mediaExists = await prisma.media.findUnique({
+        where: { id: featuredImageMediaId },
+      })
+      if (!mediaExists) {
+        return NextResponse.json(
+          { error: 'Featured image media not found' },
+          { status: 404 }
+        )
+      }
+    }
+
     // Check if slug is already taken by another article
     if (slug !== existingArticle.slug) {
       const slugConflict = await prisma.article.findUnique({
@@ -123,7 +147,8 @@ export async function PUT(
         slug,
         excerpt,
         content,
-        featuredImage,
+        featuredImage: featuredImageMediaId ? null : featuredImage,
+        featuredImageMediaId: featuredImageMediaId || null,
         categoryId,
         editorId,
         published: shouldPublish,
@@ -137,6 +162,16 @@ export async function PUT(
       include: {
         category: true,
         editor: true,
+        featuredImageMedia: {
+          select: {
+            id: true,
+            filename: true,
+            mimeType: true,
+            altText: true,
+            title: true,
+            caption: true,
+          },
+        },
       },
     })
 

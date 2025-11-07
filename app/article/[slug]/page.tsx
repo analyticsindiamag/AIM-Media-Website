@@ -6,7 +6,10 @@ import { format } from 'date-fns'
 import type { Metadata } from 'next'
 import { AdBannerFetcher } from '@/components/ad-banner-fetcher'
 import { ArticleInteractiveBar } from '@/components/article-interactive-bar'
+import { CommentsSection } from '@/components/comments-section'
+import { ArticleViewTracker } from '@/components/article-view-tracker'
 import { getArticleUrl } from '@/lib/article-url'
+import { getCurrentUser } from '@/lib/session'
 
 interface PageProps {
   params: Promise<{
@@ -49,9 +52,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
-  const absoluteImage = article.featuredImage && !article.featuredImage.startsWith('http')
-    ? `${baseUrl}${article.featuredImage.startsWith('/') ? '' : '/'}${article.featuredImage}`
-    : article.featuredImage || undefined
+  
+  // Get featured image URL - prefer media gallery, fallback to URL
+  const featuredImageUrl = article.featuredImageMediaId
+    ? `${baseUrl}/api/media/${article.featuredImageMediaId}`
+    : article.featuredImage || null
+  
+  const absoluteImage = featuredImageUrl && !featuredImageUrl.startsWith('http')
+    ? `${baseUrl}${featuredImageUrl.startsWith('/') ? '' : '/'}${featuredImageUrl}`
+    : featuredImageUrl || undefined
 
   return {
     title: article.metaTitle || article.title,
@@ -89,12 +98,19 @@ export const revalidate = 60
 
 export default async function ArticlePage({ params }: PageProps) {
   const { slug } = await params
+  const user = await getCurrentUser()
   
   const article = await prisma.article.findUnique({
     where: { slug },
     include: {
       category: true,
       editor: true,
+      featuredImageMedia: {
+        select: {
+          id: true,
+          altText: true,
+        },
+      },
     },
   })
 
@@ -102,23 +118,46 @@ export default async function ArticlePage({ params }: PageProps) {
     notFound()
   }
 
-  // Increment views (non-blocking)
-  prisma.article
-    .update({ where: { id: article.id }, data: { views: { increment: 1 } } })
-    .catch(console.error)
+  // Check if user liked this article
+  let isLiked = false
+  if (user) {
+    const like = await prisma.like.findUnique({
+      where: {
+        userId_articleId: {
+          userId: user.id,
+          articleId: article.id,
+        },
+      },
+    })
+    isLiked = !!like
+  }
+
+  // Track view (non-blocking) - will be called from client component
 
   // Fetch related articles from same category
   const relatedArticles = await prisma.article.findMany({
     where: { published: true, categoryId: article.categoryId, NOT: { id: article.id } },
     take: 3,
     orderBy: { publishedAt: 'desc' },
-    include: { category: true, editor: true },
+    include: { 
+      category: true, 
+      editor: true,
+      featuredImageMedia: {
+        select: { id: true },
+      },
+    },
   })
 
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+  
+  // Get featured image URL - prefer media gallery, fallback to URL
+  const featuredImageUrl = article.featuredImageMediaId
+    ? `${baseUrl}/api/media/${article.featuredImageMediaId}`
+    : article.featuredImage || null
 
   return (
     <>
+      <ArticleViewTracker articleSlug={article.slug} />
       {/* Schema.org JSON-LD for NewsArticle */}
       <script
         type="application/ld+json"
@@ -127,7 +166,7 @@ export default async function ArticlePage({ params }: PageProps) {
             '@context': 'https://schema.org',
             '@type': 'NewsArticle',
             headline: article.title,
-            image: article.featuredImage || '',
+            image: featuredImageUrl || '',
             datePublished: article.publishedAt?.toISOString(),
             dateModified: article.updatedAt.toISOString(),
             author: { 
@@ -185,10 +224,10 @@ export default async function ArticlePage({ params }: PageProps) {
 
       <article className="bg-white">
         {/* Hero Section with Image Overlay - WSJ Style */}
-        {article.featuredImage && (
+        {featuredImageUrl && (
           <div className="wsj-hero">
             <Image
-              src={article.featuredImage}
+              src={featuredImageUrl}
               alt={article.featuredImageAltText || article.title}
               fill
               priority
@@ -210,8 +249,11 @@ export default async function ArticlePage({ params }: PageProps) {
                 <ArticleInteractiveBar
                   url={`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/article/${article.slug}`}
                   title={article.title}
+                  articleSlug={article.slug}
                   variant="light"
                   readTime={article.readTime}
+                  initialLikesCount={article.likesCount}
+                  initialIsLiked={isLiked}
                 />
               </div>
             </div>
@@ -224,19 +266,22 @@ export default async function ArticlePage({ params }: PageProps) {
             {/* Main Article Content */}
             <div className="lg:col-span-9 xl:col-span-10">
               {/* Article Header Bar - WSJ Style (only if no hero image) */}
-              {!article.featuredImage && (
+              {!featuredImageUrl && (
                 <div className="flex items-center justify-between mb-6 pb-4 border-b border-[var(--wsj-border-light)]">
                   <ArticleInteractiveBar
-                      url={`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/article/${article.slug}`}
-                      title={article.title}
+                    url={`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/article/${article.slug}`}
+                    title={article.title}
+                    articleSlug={article.slug}
                     variant="default"
                     readTime={article.readTime}
+                    initialLikesCount={article.likesCount}
+                    initialIsLiked={isLiked}
                   />
                 </div>
               )}
 
               {/* Title - WSJ Style Large Serif (only if no hero image) */}
-              {!article.featuredImage && (
+              {!featuredImageUrl && (
                 <>
                   <h1 className="font-serif font-bold text-[var(--wsj-font-size-6xl)] md:text-[var(--wsj-font-size-7xl)] leading-[var(--wsj-line-height-tight)] mb-4 text-[var(--wsj-text-black)] max-w-[900px]">
                     {article.title}
@@ -252,7 +297,7 @@ export default async function ArticlePage({ params }: PageProps) {
               )}
 
               {/* Caption for hero image */}
-              {article.featuredImage && (
+              {featuredImageUrl && (
                 <p className="text-[var(--wsj-font-size-sm)] text-[var(--wsj-text-medium-gray)] italic font-serif mb-2 mt-4">
                   {article.featuredImageCaption || article.category.name}
                 </p>
@@ -292,6 +337,9 @@ export default async function ArticlePage({ params }: PageProps) {
                   </div>
                 )}
               </div>
+
+              {/* Comments Section */}
+              <CommentsSection articleSlug={article.slug} />
             </div>
 
             {/* Sidebar with Ad Banner */}
@@ -313,13 +361,16 @@ export default async function ArticlePage({ params }: PageProps) {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 {relatedArticles.map((relatedArticle) => {
                   const relatedUrl = getArticleUrl(relatedArticle)
+                  const relatedImageUrl = relatedArticle.featuredImageMediaId
+                    ? `${baseUrl}/api/media/${relatedArticle.featuredImageMediaId}`
+                    : relatedArticle.featuredImage || null
                   return (
                   <article key={relatedArticle.id} className="group">
                     <Link href={relatedUrl}>
-                      {relatedArticle.featuredImage && (
+                      {relatedImageUrl && (
                         <div className="relative w-full h-[200px] md:h-[240px] overflow-hidden mb-4">
                           <Image
-                            src={relatedArticle.featuredImage}
+                            src={relatedImageUrl}
                             alt={relatedArticle.title}
                             fill
                             loading="lazy"

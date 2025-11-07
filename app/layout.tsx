@@ -4,6 +4,7 @@ import "./globals.css";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
 import MixpanelProvider from "./mixpanel-provider";
+import { AuthSessionProvider } from "@/components/session-provider";
 import { Suspense } from "react";
 import { prisma } from "@/lib/prisma";
 
@@ -122,13 +123,15 @@ export default async function RootLayout({
         className={`${inter.variable} ${garamond.variable} antialiased`}
       >
         <Suspense fallback={null}>
-          <MixpanelProvider>
-            <Header />
-            <main className="min-h-screen">
-              {children}
-            </main>
-            <Footer />
-          </MixpanelProvider>
+          <AuthSessionProvider>
+            <MixpanelProvider>
+              <Header />
+              <main className="min-h-screen">
+                {children}
+              </main>
+              <Footer />
+            </MixpanelProvider>
+          </AuthSessionProvider>
         </Suspense>
       </body>
     </html>

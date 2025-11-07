@@ -4,7 +4,8 @@ import { prisma } from '@/lib/prisma'
 export const revalidate = 0
 
 export default async function SubscribersPage() {
-  const subscribers = await prisma.subscriber.findMany({ orderBy: { createdAt: 'desc' } })
+  try {
+    const subscribers = await prisma.subscriber.findMany({ orderBy: { createdAt: 'desc' } })
 
   return (
     <div>
@@ -39,4 +40,23 @@ export default async function SubscribersPage() {
       </div>
     </div>
   )
+  } catch (error) {
+    // During build, database might not be available
+    return (
+      <div>
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-3xl font-bold">Subscribers</h1>
+          <Link href="/api/subscribers/export" className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors">
+            Export CSV
+          </Link>
+        </div>
+
+        <div className="bg-white rounded-lg shadow">
+          <div className="text-center py-20 text-muted-foreground">
+            Database not available. Please configure DATABASE_URL.
+          </div>
+        </div>
+      </div>
+    )
+  }
 }

@@ -88,6 +88,9 @@ export default async function EditorPage({ params }: PageProps) {
       include: {
         category: true,
         editor: true,
+        featuredImageMedia: {
+          select: { id: true },
+        },
       },
     }),
   ])
@@ -201,14 +204,17 @@ export default async function EditorPage({ params }: PageProps) {
             <div className="space-y-8">
               {articles.map((article) => {
                 const articleUrl = getArticleUrl(article)
+                const articleImageUrl = article.featuredImageMediaId
+                  ? `${baseUrl}/api/media/${article.featuredImageMediaId}`
+                  : article.featuredImage || null
                 return (
                 <article key={article.id} className="group">
                   <div className="flex flex-col md:flex-row gap-4 md:gap-6">
                     {/* Article Image */}
-                    {article.featuredImage && (
+                    {articleImageUrl && (
                       <Link href={articleUrl} className="block relative w-full md:w-[200px] h-[200px] md:h-[150px] flex-shrink-0 overflow-hidden">
                         <Image
-                          src={article.featuredImage}
+                          src={articleImageUrl}
                           alt={article.featuredImageAltText || article.title}
                           fill
                           loading="lazy"

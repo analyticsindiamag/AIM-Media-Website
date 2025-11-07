@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
-import { LayoutDashboard, FileText, FolderOpen, Users, Upload, LogOut, Image, File } from 'lucide-react'
+import { LayoutDashboard, FileText, FolderOpen, Users, Upload, LogOut, Image, File, Images, MessageSquare } from 'lucide-react'
 
 export function AdminNav() {
   const pathname = usePathname()
@@ -19,6 +19,8 @@ export function AdminNav() {
     { href: '/admin/articles', label: 'Articles', icon: FileText },
     { href: '/admin/categories', label: 'Categories', icon: FolderOpen },
     { href: '/admin/editors', label: 'Editors', icon: Users },
+    { href: '/admin/media', label: 'Media', icon: Images },
+    { href: '/admin/comments', label: 'Comments', icon: MessageSquare },
     { href: '/admin/import', label: 'Import CSV', icon: Upload },
     { href: '/admin/subscribers', label: 'Subscribers', icon: Users },
     { href: '/admin/sponsored-banners', label: 'Sponsored Banners', icon: Image },

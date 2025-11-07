@@ -2,20 +2,33 @@
 
 import { Type, MessageCircle, MoreVertical } from 'lucide-react'
 import { ShareButtons } from './share-buttons'
+import { LikeButton } from './like-button'
 import { useEffect, useRef, useState } from 'react'
 
 interface ArticleInteractiveBarProps {
   url: string
   title: string
+  articleSlug: string
   variant?: 'default' | 'light'
   readTime?: number
+  initialLikesCount?: number
+  initialIsLiked?: boolean
 }
 
-export function ArticleInteractiveBar({ url, title, variant = 'default', readTime }: ArticleInteractiveBarProps) {
+export function ArticleInteractiveBar({ 
+  url, 
+  title, 
+  articleSlug,
+  variant = 'default', 
+  readTime,
+  initialLikesCount = 0,
+  initialIsLiked = false,
+}: ArticleInteractiveBarProps) {
   const [fontSize, setFontSize] = useState(16)
   const menuRef = useRef<HTMLDivElement>(null)
   const buttonRef = useRef<HTMLButtonElement>(null)
   const [showMenu, setShowMenu] = useState(false)
+  const [commentCount, setCommentCount] = useState(0)
 
   useEffect(() => {
     // Get initial font size from document
@@ -42,6 +55,22 @@ export function ArticleInteractiveBar({ url, title, variant = 'default', readTim
       document.removeEventListener('mousedown', handleClickOutside)
     }
   }, [showMenu])
+
+  // Fetch comment count
+  useEffect(() => {
+    const fetchCommentCount = async () => {
+      try {
+        const response = await fetch(`/api/articles/by-slug/${articleSlug}/comments`)
+        if (response.ok) {
+          const data = await response.json()
+          setCommentCount(data.comments?.length || 0)
+        }
+      } catch (error) {
+        console.error('Error fetching comment count:', error)
+      }
+    }
+    fetchCommentCount()
+  }, [articleSlug])
 
   const handleResize = () => {
     const html = document.documentElement
@@ -105,13 +134,20 @@ export function ArticleInteractiveBar({ url, title, variant = 'default', readTim
         <Type className="w-4 h-4" />
         <span>{variant === 'light' ? 'Resize' : 'AA Resize'}</span>
       </button>
+      <LikeButton
+        articleSlug={articleSlug}
+        initialLikesCount={initialLikesCount}
+        initialIsLiked={initialIsLiked}
+        variant={variant}
+        compact={false}
+      />
       <button 
         className={`flex items-center gap-1 ${textColorClass} transition-colors`}
         onClick={handleComments}
         aria-label="View comments"
       >
         <MessageCircle className="w-4 h-4" />
-        <span>0</span>
+        <span>{commentCount}</span>
       </button>
       {variant === 'light' && <div className={`border-l ${separatorClass} h-4 mx-2`} />}
       <div className="relative">

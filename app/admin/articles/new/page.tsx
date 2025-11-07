@@ -39,6 +39,7 @@ export default function NewArticlePage() {
     excerpt: '',
     content: '',
     featuredImage: '',
+    featuredImageMediaId: null as string | null,
     categoryId: '',
     editorId: '',
     published: false,
@@ -79,7 +80,11 @@ export default function NewArticlePage() {
       const response = await fetch('/api/articles', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ ...formData, published: publish }),
+        body: JSON.stringify({ 
+          ...formData, 
+          published: publish,
+          featuredImageMediaId: formData.featuredImageMediaId || undefined,
+        }),
       })
 
       if (response.ok) {
@@ -192,7 +197,8 @@ export default function NewArticlePage() {
         <ImageUpload
           label="Featured Image"
           value={formData.featuredImage}
-          onChange={(url) => setFormData({ ...formData, featuredImage: url })}
+          mediaId={formData.featuredImageMediaId}
+          onChange={(url, mediaId) => setFormData({ ...formData, featuredImage: url, featuredImageMediaId: mediaId || null })}
         />
 
         {/* Content */}

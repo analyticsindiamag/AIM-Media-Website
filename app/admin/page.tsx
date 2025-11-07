@@ -2,23 +2,28 @@ import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
 import { FileText, FolderOpen, Users, Eye } from 'lucide-react'
 
-export default async function AdminDashboard() {
-  const [totalArticles, publishedArticles, totalCategories, totalEditors] =
-    await Promise.all([
-      prisma.article.count(),
-      prisma.article.count({ where: { published: true } }),
-      prisma.category.count(),
-      prisma.editor.count(),
-    ])
+// Admin pages should be dynamic, not statically generated
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
 
-  const recentArticles = await prisma.article.findMany({
-    take: 10,
-    orderBy: { createdAt: 'desc' },
-    include: {
-      category: true,
-      editor: true,
-    },
-  })
+export default async function AdminDashboard() {
+  try {
+    const [totalArticles, publishedArticles, totalCategories, totalEditors] =
+      await Promise.all([
+        prisma.article.count(),
+        prisma.article.count({ where: { published: true } }),
+        prisma.category.count(),
+        prisma.editor.count(),
+      ])
+
+    const recentArticles = await prisma.article.findMany({
+      take: 10,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        category: true,
+        editor: true,
+      },
+    })
 
   return (
     <div>
@@ -140,5 +145,75 @@ export default async function AdminDashboard() {
       </div>
     </div>
   )
+  } catch (error) {
+    // During build, database might not be available
+    // Return empty dashboard with zero counts
+    return (
+      <div>
+        <h1 className="text-3xl font-bold mb-8">Dashboard</h1>
+
+        {/* Stats */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div className="bg-white p-6 rounded-lg shadow">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Total Articles</p>
+                <p className="text-3xl font-bold">0</p>
+              </div>
+              <FileText className="w-12 h-12 text-blue-500" />
+            </div>
+          </div>
+
+          <div className="bg-white p-6 rounded-lg shadow">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Published</p>
+                <p className="text-3xl font-bold">0</p>
+              </div>
+              <Eye className="w-12 h-12 text-green-500" />
+            </div>
+          </div>
+
+          <div className="bg-white p-6 rounded-lg shadow">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Categories</p>
+                <p className="text-3xl font-bold">0</p>
+              </div>
+              <FolderOpen className="w-12 h-12 text-purple-500" />
+            </div>
+          </div>
+
+          <div className="bg-white p-6 rounded-lg shadow">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm text-muted-foreground">Editors</p>
+                <p className="text-3xl font-bold">0</p>
+              </div>
+              <Users className="w-12 h-12 text-orange-500" />
+            </div>
+          </div>
+        </div>
+
+        {/* Recent Articles */}
+        <div className="bg-white rounded-lg shadow">
+          <div className="p-6 border-b border-border flex items-center justify-between">
+            <h2 className="text-xl font-bold">Recent Articles</h2>
+            <Link
+              href="/admin/articles/new"
+              className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors"
+            >
+              Create New Article
+            </Link>
+          </div>
+          <div className="p-6">
+            <p className="text-center text-muted-foreground py-8">
+              Database not available. Please configure DATABASE_URL.
+            </p>
+          </div>
+        </div>
+      </div>
+    )
+  }
 }
 

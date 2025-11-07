@@ -30,7 +30,13 @@ export default async function HomePage() {
               publishedAt: { not: null }
             },
             orderBy: { publishedAt: 'desc' },
-            include: { category: true, editor: true },
+            include: { 
+              category: true, 
+              editor: true,
+              featuredImageMedia: {
+                select: { id: true },
+              },
+            },
           })
           if (featured) return featured
           return prisma.article.findFirst({
@@ -39,7 +45,13 @@ export default async function HomePage() {
               publishedAt: { not: null }
             },
             orderBy: { publishedAt: 'desc' },
-            include: { category: true, editor: true },
+            include: { 
+              category: true, 
+              editor: true,
+              featuredImageMedia: {
+                select: { id: true },
+              },
+            },
           })
         } catch (err) {
           console.error('Error fetching featured article:', err)
@@ -54,7 +66,13 @@ export default async function HomePage() {
         },
         orderBy: { publishedAt: 'desc' },
         take: 30,
-        include: { category: true, editor: true },
+        include: { 
+          category: true, 
+          editor: true,
+          featuredImageMedia: {
+            select: { id: true },
+          },
+        },
       }),
       // Get categories for horizontal scrolling section
       prisma.category.findMany({
@@ -73,9 +91,9 @@ export default async function HomePage() {
     // Left column: Main news articles
     const leftColumnArticles = articlesWithoutCenter.slice(0, 8)
     
-    // Right column: Trending/Opinion articles
+    // Right column: Trending articles (by views, fallback to recent)
     const trendingArticles = articlesWithoutCenter
-      .filter(a => a.category?.slug === 'opinion')
+      .sort((a, b) => (b.views || 0) - (a.views || 0))
       .slice(0, 6)
     
     // Bottom center: More articles
@@ -95,26 +113,31 @@ export default async function HomePage() {
       name: 'Latest Articles',
       description: 'Latest AI and Technology News Articles',
       numberOfItems: allArticlesForSchema.length,
-      itemListElement: allArticlesForSchema.map((article, index) => ({
-        '@type': 'ListItem',
-        position: index + 1,
-        item: {
-          '@type': 'NewsArticle',
-          headline: article.title,
-          url: `${baseUrl}/article/${article.slug}`,
-          image: article.featuredImage || undefined,
-          datePublished: article.publishedAt?.toISOString(),
-          author: {
-            '@type': 'Person',
-            name: article.editor.name,
-            url: `${baseUrl}/editor/${article.editor.slug}`,
+      itemListElement: allArticlesForSchema.map((article, index) => {
+        const imageUrl = article.featuredImageMediaId
+          ? `${baseUrl}/api/media/${article.featuredImageMediaId}`
+          : article.featuredImage || undefined
+        return {
+          '@type': 'ListItem',
+          position: index + 1,
+          item: {
+            '@type': 'NewsArticle',
+            headline: article.title,
+            url: `${baseUrl}/article/${article.slug}`,
+            image: imageUrl,
+            datePublished: article.publishedAt?.toISOString(),
+            author: {
+              '@type': 'Person',
+              name: article.editor.name,
+              url: `${baseUrl}/editor/${article.editor.slug}`,
+            },
+            publisher: {
+              '@type': 'Organization',
+              name: 'AI Tech News',
+            },
           },
-          publisher: {
-            '@type': 'Organization',
-            name: 'AI Tech News',
-          },
-        },
-      })),
+        }
+      }),
     }
 
     // If no articles, show empty state
@@ -155,7 +178,7 @@ export default async function HomePage() {
           </div>
 
           {/* Three Column Layout - WSJ Style */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 mb-12">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 mb-12">
             {/* Left Column - Main Articles List */}
             <div className="lg:col-span-4 space-y-6">
               {leftColumnArticles.map((article, index) => {
@@ -200,18 +223,23 @@ export default async function HomePage() {
                 return (
                   <div className="group mb-8" key={centerArticle.id}>
                     <Link href={centerArticleUrl} className="block">
-                    {centerArticle.featuredImage && (
-                      <div className="relative w-full h-[400px] md:h-[500px] lg:h-[600px] overflow-hidden mb-4">
-                        <Image
-                          src={centerArticle.featuredImage}
-                          alt={centerArticle.featuredImageAltText || centerArticle.title}
-                          fill
-                          priority
-                          className="object-cover"
-                          sizes="(max-width: 1024px) 100vw, 42vw"
-                        />
-                      </div>
-                    )}
+                    {(() => {
+                      const centerImageUrl = centerArticle.featuredImageMediaId
+                        ? `${baseUrl}/api/media/${centerArticle.featuredImageMediaId}`
+                        : centerArticle.featuredImage || null
+                      return centerImageUrl ? (
+                        <div className="relative w-full aspect-[16/10] md:aspect-[16/9] overflow-hidden mb-4">
+                          <Image
+                            src={centerImageUrl}
+                            alt={centerArticle.featuredImageAltText || centerArticle.title}
+                            fill
+                            priority
+                            className="object-cover"
+                            sizes="(max-width: 1024px) 100vw, 42vw"
+                          />
+                        </div>
+                      ) : null
+                    })()}
                     <h2 className="font-serif font-bold text-[28px] md:text-[32px] lg:text-[36px] leading-[var(--wsj-line-height-normal)] mb-3 text-[var(--wsj-text-black)] group-hover:underline">
                       {centerArticle.title}
                     </h2>
@@ -244,17 +272,22 @@ export default async function HomePage() {
                     <article key={article.id} className="group">
                       <Link href={articleUrl} className="block">
                         <div className="flex gap-4">
-                          {article.featuredImage && (
-                            <div className="relative w-32 h-24 flex-shrink-0 overflow-hidden">
-                              <Image
-                                src={article.featuredImage}
-                                alt={article.featuredImageAltText || article.title}
-                                fill
-                                className="object-cover"
-                                sizes="128px"
-                              />
-                            </div>
-                          )}
+                          {(() => {
+                            const articleImageUrl = article.featuredImageMediaId
+                              ? `${baseUrl}/api/media/${article.featuredImageMediaId}`
+                              : article.featuredImage || null
+                            return articleImageUrl ? (
+                              <div className="relative w-32 h-24 flex-shrink-0 overflow-hidden">
+                                <Image
+                                  src={articleImageUrl}
+                                  alt={article.featuredImageAltText || article.title}
+                                  fill
+                                  className="object-cover"
+                                  sizes="128px"
+                                />
+                              </div>
+                            ) : null
+                          })()}
                           <div className="flex-1">
                             <h3 className="font-serif font-bold text-[var(--wsj-font-size-base)] leading-[var(--wsj-line-height-relaxed)] text-[var(--wsj-text-black)] group-hover:underline mb-1">
                               {article.title}
@@ -275,41 +308,52 @@ export default async function HomePage() {
               )}
             </div>
 
-            {/* Right Column - Trending/Opinion Section */}
-            <div className="lg:col-span-3 border-t lg:border-t-0 lg:border-l border-[var(--wsj-border-light)] pt-6 lg:pt-0 lg:pl-6">
+            {/* Right Column - Trending Section */}
+            <div className="lg:col-span-3 border-t lg:border-t-0 lg:border-l border-[var(--wsj-border-light)] pt-6 lg:pt-0 lg:pl-8">
               {/* Side Banner - Vertical */}
               <div className="mb-8">
                 <AdBannerFetcher type="homepage-side" />
               </div>
 
-              {/* Trending/Opinion Section */}
+              {/* Trending Section */}
               {trendingArticles.length > 0 && (
                 <div className="mb-8">
-                  <h3 className="font-serif font-bold text-[var(--wsj-font-size-2xl)] mb-4 text-[var(--wsj-text-black)]">Trending</h3>
+                  <h3 className="font-serif font-bold text-[var(--wsj-font-size-2xl)] mb-6 text-[var(--wsj-text-black)]">Trending</h3>
                   <div className="space-y-6">
                     {trendingArticles.map((article, idx) => {
                       const articleUrl = getArticleUrl(article)
+                      const articleImageUrl = article.featuredImageMediaId
+                        ? `${baseUrl}/api/media/${article.featuredImageMediaId}`
+                        : article.featuredImage || null
                       return (
                       <article key={article.id} className="group">
-                        <Link href={articleUrl} className="block">
-                          {article.featuredImage && (
-                            <div className="relative w-full h-[120px] overflow-hidden mb-3">
-                              <Image
-                                src={article.featuredImage}
-                                alt={article.title}
-                                fill
-                                loading="lazy"
-                                className="object-cover"
-                                sizes="(max-width: 1024px) 100vw, 25vw"
-                              />
+                        <div className="flex gap-3 items-start">
+                          <Link href={articleUrl} className="flex-shrink-0">
+                            {articleImageUrl ? (
+                              <div className="relative w-24 h-24 overflow-hidden">
+                                <Image
+                                  src={articleImageUrl}
+                                  alt={article.title}
+                                  fill
+                                  loading="lazy"
+                                  className="object-cover"
+                                  sizes="96px"
+                                />
+                              </div>
+                            ) : (
+                              <div className="w-24 h-24 bg-[var(--wsj-bg-light-gray)]" />
+                            )}
+                          </Link>
+                          <div className="flex-1 min-w-0">
+                            <Link href={articleUrl}>
+                              <h4 className="font-serif font-bold text-[var(--wsj-font-size-sm)] leading-[var(--wsj-line-height-relaxed)] text-[var(--wsj-text-black)] group-hover:underline mb-1 line-clamp-2">
+                                {article.title}
+                              </h4>
+                            </Link>
+                            <div className="text-[var(--wsj-font-size-xs)] text-[var(--wsj-text-medium-gray)] font-sans">
+                              By <Link href={`/editor/${article.editor.slug}`} className="hover:underline">{article.editor.name}</Link>
                             </div>
-                          )}
-                          <h4 className="font-serif font-bold text-[var(--wsj-font-size-base)] leading-[var(--wsj-line-height-relaxed)] text-[var(--wsj-text-black)] group-hover:underline mb-1">
-                            {article.title}
-                          </h4>
-                        </Link>
-                        <div className="text-[var(--wsj-font-size-sm)] text-[var(--wsj-text-medium-gray)] font-sans">
-                          By <Link href={`/editor/${article.editor.slug}`} className="hover:underline">{article.editor.name}</Link>
+                          </div>
                         </div>
                         {idx < trendingArticles.length - 1 && (
                           <div className="mt-6 pt-6 border-t border-[var(--wsj-border-light)]" />
@@ -357,18 +401,23 @@ export default async function HomePage() {
                             return (
                             <div key={article.id} className="flex-shrink-0 w-[280px] group">
                               <Link href={articleUrl} className="block">
-                                {article.featuredImage && (
-                                  <div className="relative w-full h-[180px] overflow-hidden mb-3">
-                                    <Image
-                                      src={article.featuredImage}
-                                      alt={article.title}
-                                      fill
-                                      loading="lazy"
-                                      className="object-cover"
-                                      sizes="280px"
-                                    />
-                                  </div>
-                                )}
+                                {(() => {
+                                  const articleImageUrl = article.featuredImageMediaId
+                                    ? `${baseUrl}/api/media/${article.featuredImageMediaId}`
+                                    : article.featuredImage || null
+                                  return articleImageUrl ? (
+                                    <div className="relative w-full h-[180px] overflow-hidden mb-3">
+                                      <Image
+                                        src={articleImageUrl}
+                                        alt={article.title}
+                                        fill
+                                        loading="lazy"
+                                        className="object-cover"
+                                        sizes="280px"
+                                      />
+                                    </div>
+                                  ) : null
+                                })()}
                                 <h4 className="font-serif font-bold text-[var(--wsj-font-size-base)] leading-[var(--wsj-line-height-relaxed)] text-[var(--wsj-text-black)] group-hover:underline mb-2">
                                   {article.title}
                                 </h4>

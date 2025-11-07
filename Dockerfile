@@ -11,6 +11,10 @@ RUN apt-get update -y && \
 COPY package*.json ./
 COPY prisma ./prisma
 
+# Set a temporary DATABASE_URL for build (Prisma requires it even if not used)
+# SQLite will create the file if it doesn't exist, but during build we just need the env var
+ENV DATABASE_URL="file:./prisma/dev.db"
+
 # Install dependencies (postinstall will run prisma generate successfully now)
 RUN npm ci || npm install
 
@@ -21,6 +25,8 @@ RUN npx prisma generate
 COPY . .
 
 # Build Next.js app
+# Note: During build, database queries will fail gracefully due to error handling
+# The actual DATABASE_URL should be provided at runtime
 RUN npm run build
 
 

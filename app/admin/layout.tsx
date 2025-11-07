@@ -2,6 +2,10 @@ import { AdminNav } from '@/components/admin/admin-nav'
 import { AdminBreadcrumbs } from '@/components/admin/breadcrumbs'
 import type { Metadata } from 'next'
 
+// Admin routes should be dynamic, not statically generated
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export const metadata: Metadata = {
   robots: {
     index: false,
