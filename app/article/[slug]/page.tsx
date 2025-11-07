@@ -230,47 +230,47 @@ export default async function ArticlePage({ params }: PageProps) {
 
         {/* Article Container */}
         <div className="article-container py-6 md:py-8">
-          <div className="max-w-[900px] mx-auto">
-            {/* Category - Left aligned in blue */}
-            <div className="mb-3">
+          <div className="max-w-[760px] mx-auto px-4">
+            {/* Category Badge - matches "EXCLUSIVE | POLICY" design */}
+            <div className="flex items-center gap-2 mb-4">
               <Link 
                 href={`/category/${article.category.slug}`}
-                className="text-[var(--wsj-blue-primary)] font-sans text-[13px] font-bold uppercase tracking-wide hover:underline"
+                className="text-[var(--wsj-blue-primary)] font-sans text-[11px] font-bold uppercase tracking-wider hover:underline"
               >
                 {article.category.name}
               </Link>
             </div>
 
             {/* Article Title */}
-            <h1 className="font-serif font-bold text-[32px] md:text-[40px] leading-[1.1] mb-4 text-[var(--wsj-text-black)]">
+            <h1 className="font-serif font-bold text-[36px] md:text-[44px] leading-[1.1] mb-3 text-[var(--wsj-text-black)]">
               {article.title}
             </h1>
 
             {/* Subtitle/Excerpt */}
             {article.excerpt && (
-              <p className="text-[17px] md:text-[19px] text-[var(--wsj-text-dark-gray)] leading-[1.5] mb-6 font-sans">
+              <p className="text-[17px] text-[#666666] leading-[1.47] mb-5 font-sans">
                 {article.excerpt}
               </p>
             )}
 
-            {/* Author - italics with blue link */}
-            <div className="text-[15px] font-sans italic text-[var(--wsj-text-dark-gray)] mb-2">
-              By{' '}
+            {/* Author and Time */}
+            <div className="flex items-center gap-1 text-[14px] font-sans mb-5">
+              <span className="text-[var(--wsj-text-dark-gray)]">By</span>
               <Link 
                 href={`/editor/${article.editor.slug}`}
-                className="text-[var(--wsj-blue-primary)] hover:underline not-italic"
+                className="text-[var(--wsj-blue-primary)] hover:underline font-medium"
               >
                 {article.editor.name}
               </Link>
             </div>
 
             {/* Time */}
-            <div className="text-[13px] text-[var(--wsj-text-medium-gray)] font-sans mb-6">
+            <div className="text-[13px] text-[#666666] font-sans mb-5">
               {article.publishedAt && format(article.publishedAt, 'MMM. d, yyyy h:mm a')} ET
             </div>
 
-            {/* Share and Resize buttons */}
-            <div className="flex items-center gap-6 mb-8 pb-6 border-b border-[var(--wsj-border-light)]">
+            {/* Share, Resize, and Listen buttons */}
+            <div className="flex items-center gap-6 mb-6 pb-5">
               <ArticleInteractiveBar
                 url={`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/article/${article.slug}`}
                 title={article.title}
@@ -284,20 +284,20 @@ export default async function ArticlePage({ params }: PageProps) {
 
             {/* Featured Image */}
             {featuredImageUrl && (
-              <div className="mb-8">
-                <div className="relative w-full aspect-[16/9] overflow-hidden rounded-sm">
+              <div className="mb-8 -mx-4 md:mx-0">
+                <div className="relative w-full aspect-[1.5/1] overflow-hidden">
                   <Image
                     src={featuredImageUrl}
                     alt={article.featuredImageAltText || article.title}
                     fill
                     priority
                     className="object-cover"
-                    sizes="(max-width: 900px) 100vw, 900px"
+                    sizes="(max-width: 768px) 100vw, 760px"
                   />
                 </div>
                 {/* Image Caption */}
                 {article.featuredImageCaption && (
-                  <p className="text-[13px] text-[var(--wsj-text-medium-gray)] italic font-sans mt-2">
+                  <p className="text-[11px] text-[#666666] font-sans mt-2 px-4 md:px-0">
                     {article.featuredImageCaption}
                   </p>
                 )}

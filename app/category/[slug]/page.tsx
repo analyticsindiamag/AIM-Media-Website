@@ -65,8 +65,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 }
 
-// Revalidate every 60 seconds
-export const revalidate = 60
+// Revalidate every 60 seconds (set to 0 for development to disable caching)
+export const revalidate = 0
 
 export default async function CategoryPage({ params }: PageProps) {
   const { slug } = await params

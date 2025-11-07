@@ -6,7 +6,7 @@ import type { Metadata } from 'next'
 import { format } from 'date-fns'
 import { Twitter, Mail, Linkedin } from 'lucide-react'
 import { getArticleUrl } from '@/lib/article-url'
-import { AdBanner } from '@/components/ad-banner'
+import { AdBannerFetcher } from '@/components/ad-banner-fetcher'
 
 interface PageProps {
   params: Promise<{
@@ -67,8 +67,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 }
 
-// Revalidate every 60 seconds
-export const revalidate = 60
+// Revalidate every 60 seconds (set to 0 for development to disable caching)
+export const revalidate = 0
 
 export default async function EditorPage({ params }: PageProps) {
   const { slug } = await params
@@ -153,22 +153,23 @@ export default async function EditorPage({ params }: PageProps) {
                   
                   {/* Editor Info */}
                   <div className="w-full max-w-2xl">
-                    <div className="mb-3">
-                      <h1 className="wsj-editor-name text-[40px] md:text-[48px] leading-tight">
+                    {/* Name and Follow Button */}
+                    <div className="flex items-center justify-center gap-3 mb-3">
+                      <h1 className="font-serif font-bold text-[40px] md:text-[48px] leading-[1.1] text-[var(--wsj-text-black)]">
                         {editor.name}
                       </h1>
-                      <button className="wsj-button-outline text-[var(--wsj-font-size-sm)] mt-4">
+                      <button className="inline-flex items-center px-3 py-1 border border-[var(--wsj-text-black)] text-[var(--wsj-text-black)] text-[11px] font-sans font-bold rounded hover:bg-[var(--wsj-text-black)] hover:text-white transition-colors">
                         Follow
                       </button>
                     </div>
                     
                     {/* Title */}
-                    <p className="wsj-editor-title text-[15px] mb-4">
+                    <p className="text-[15px] text-[var(--wsj-text-medium-gray)] mb-6 font-sans">
                       {editor.title || 'Reporter, AIM MEDIA HOUSE'}
                     </p>
                     
                     {/* Contact Icons */}
-                    <div className="flex items-center justify-center gap-5 mb-6">
+                    <div className="flex items-center justify-center gap-4 mb-8">
                       {editor.twitter && (
                         <a 
                           href={editor.twitter.startsWith('http') ? editor.twitter : `https://twitter.com/${editor.twitter.replace('@', '')}`}
@@ -177,7 +178,7 @@ export default async function EditorPage({ params }: PageProps) {
                           className="text-[var(--wsj-text-black)] hover:text-[var(--wsj-text-medium-gray)] transition-colors"
                           aria-label="Twitter/X"
                         >
-                          <Twitter className="w-5 h-5" />
+                          <Twitter className="w-[18px] h-[18px]" />
                         </a>
                       )}
                       {editor.email && (
@@ -186,7 +187,7 @@ export default async function EditorPage({ params }: PageProps) {
                           className="text-[var(--wsj-text-black)] hover:text-[var(--wsj-text-medium-gray)] transition-colors"
                           aria-label="Email"
                         >
-                          <Mail className="w-5 h-5" />
+                          <Mail className="w-[18px] h-[18px]" />
                         </a>
                       )}
                       {editor.linkedin && (
@@ -197,16 +198,16 @@ export default async function EditorPage({ params }: PageProps) {
                           className="text-[var(--wsj-text-black)] hover:text-[var(--wsj-text-medium-gray)] transition-colors"
                           aria-label="LinkedIn"
                         >
-                          <Linkedin className="w-5 h-5" />
+                          <Linkedin className="w-[18px] h-[18px]" />
                         </a>
                       )}
                     </div>
                     
                     {/* Biography */}
                     {editor.bio && (
-                      <div className="wsj-editor-bio text-[15px] leading-relaxed text-left">
+                      <div className="text-left text-[15px] leading-[1.6] text-[var(--wsj-text-medium-gray)] font-sans max-w-[680px] mx-auto">
                         {editor.bio.split('\n\n').map((paragraph, idx) => (
-                          <p key={idx} className="mb-4 last:mb-0">
+                          <p key={idx} className="mb-5 last:mb-0">
                             {paragraph}
                           </p>
                         ))}
@@ -219,30 +220,29 @@ export default async function EditorPage({ params }: PageProps) {
               {/* Latest Articles Section */}
               {articles.length > 0 && (
                 <div>
-                  <div className="wsj-divider-thick mb-6"></div>
-                  <h2 className="text-[var(--wsj-font-size-sm)] tracking-wide uppercase text-[var(--wsj-text-medium-gray)] mb-8 font-sans font-bold">
+                  <h2 className="text-[13px] tracking-[0.08em] uppercase text-[var(--wsj-text-black)] mb-6 font-sans font-bold border-t border-[var(--wsj-border-light)] pt-6">
                     LATEST ARTICLES
                   </h2>
                   
-                  <div className="space-y-8">
+                  <div className="space-y-0">
                     {articles.map((article, idx) => {
                       const articleUrl = getArticleUrl(article)
                       const articleImageUrl = article.featuredImageMediaId
                         ? `${baseUrl}/api/media/${article.featuredImageMediaId}`
                         : article.featuredImage || null
                       return (
-                      <article key={article.id} className="group pb-8 border-b border-[var(--wsj-border-light)] last:border-b-0">
-                        <div className="flex flex-col md:flex-row gap-4 md:gap-6">
+                      <article key={article.id} className="group py-6 border-b border-[var(--wsj-border-light)] last:border-b-0">
+                        <div className="flex flex-col md:flex-row gap-5">
                           {/* Article Image */}
                           {articleImageUrl && (
-                            <Link href={articleUrl} className="block relative w-full md:w-[280px] h-[180px] md:h-[160px] flex-shrink-0 overflow-hidden">
+                            <Link href={articleUrl} className="block relative w-full md:w-[260px] h-[180px] md:h-[145px] flex-shrink-0 overflow-hidden">
                               <Image
                                 src={articleImageUrl}
                                 alt={article.featuredImageAltText || article.title}
                                 fill
                                 loading={idx < 3 ? "eager" : "lazy"}
                                 className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-                                sizes="(max-width: 768px) 100vw, 280px"
+                                sizes="(max-width: 768px) 100vw, 260px"
                               />
                             </Link>
                           )}
@@ -250,33 +250,31 @@ export default async function EditorPage({ params }: PageProps) {
                           {/* Article Content */}
                           <div className="flex-1">
                             {/* Category */}
-                            <div className="text-[var(--wsj-font-size-xs)] uppercase text-[var(--wsj-text-medium-gray)] mb-2 font-sans font-bold tracking-wider">
+                            <div className="text-[11px] uppercase text-[var(--wsj-text-medium-gray)] mb-2 font-sans font-bold tracking-[0.08em]">
                               {article.category.name}
                             </div>
                             
                             {/* Title */}
                             <Link href={articleUrl}>
-                              <h3 className="font-serif font-bold text-[22px] leading-[var(--wsj-line-height-normal)] text-[var(--wsj-text-black)] group-hover:underline mb-2">
+                              <h3 className="font-serif font-bold text-[24px] leading-[1.25] text-[var(--wsj-text-black)] group-hover:underline mb-3">
                                 {article.title}
                               </h3>
                             </Link>
                             
                             {/* Excerpt */}
                             {article.excerpt && (
-                              <Link href={articleUrl} className="block">
-                                <p className="text-[15px] text-[var(--wsj-text-dark-gray)] mb-3 font-serif leading-[var(--wsj-line-height-loose)] line-clamp-2">
-                                  {article.excerpt}
-                                </p>
-                              </Link>
+                              <p className="text-[15px] text-[var(--wsj-text-medium-gray)] mb-3 font-sans leading-[1.5] line-clamp-2">
+                                {article.excerpt}
+                              </p>
                             )}
                             
                             {/* Author and Date */}
-                            <div className="text-[var(--wsj-font-size-sm)] text-[var(--wsj-text-medium-gray)] font-sans">
-                              By <span className="italic">{article.editor.name}</span>
+                            <div className="text-[13px] text-[var(--wsj-text-medium-gray)] font-sans">
+                              By <Link href={`/editor/${article.editor.slug}`} className="text-[var(--wsj-text-black)] hover:underline">{article.editor.name}</Link>
                               {article.publishedAt && (
                                 <>
-                                  {' '}
-                                  <span className="italic">
+                                  {' and '}
+                                  <span>
                                     {format(article.publishedAt, 'MMMM d, yyyy')}
                                   </span>
                                 </>
@@ -307,7 +305,7 @@ export default async function EditorPage({ params }: PageProps) {
                 <div className="text-[var(--wsj-font-size-xs)] uppercase text-[var(--wsj-text-medium-gray)] font-sans font-bold tracking-wide mb-4">
                   Advertisement
                 </div>
-                <AdBanner type="article-side" />
+                <AdBannerFetcher type="article-side" />
               </div>
             </aside>
           </div>

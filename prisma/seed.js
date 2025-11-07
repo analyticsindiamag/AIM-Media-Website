@@ -399,6 +399,7 @@ Pricing remains competitive with other providers, with Google emphasizing value 
 
 The release represents Google's continued investment in AI capabilities despite recent challenges. The company is positioning Gemini as a comprehensive platform for AI applications, not just a language model.`,
       featuredImage: unsplash('photo-1558494949-ef010cbdcc31', { w: 1200, h: 800 }),
+      featuredImageCaption: 'Google\'s Gemini 2.0 showcases enhanced reasoning capabilities in complex problem-solving. GOOGLE AI',
       published: true,
       publishedAt: hoursAgo(18),
       readTime: 5,
@@ -428,6 +429,7 @@ Industry analysts note that on-device AI could differentiate Apple from competit
 
 The balance between privacy and capability will be key to Apple's AI strategy. The company is betting that privacy-conscious consumers will prefer on-device processing even if it means slightly less capable features.`,
       featuredImage: unsplash('photo-1511707171634-5f897ff02aa9', { w: 1200, h: 800 }),
+      featuredImageCaption: 'Apple\'s new AI features bring enhanced Siri capabilities while maintaining user privacy. APPLE INC.',
       published: true,
       publishedAt: hoursAgo(12),
       readTime: 4,
@@ -457,6 +459,7 @@ Leading enterprises report that platform standardization has reduced time-to-pro
 
 However, some organizations are maintaining multi-cloud strategies for redundancy and risk mitigation. The challenge is balancing standardization with flexibility.`,
       featuredImage: unsplash('photo-1506744038136-46273834b3fb', { w: 1200, h: 800 }),
+      featuredImageCaption: 'Enterprise AI platforms are consolidating as companies move from pilots to production. ENTERPRISE AI SUMMIT',
       published: true,
       publishedAt: daysAgo(3),
       readTime: 6,
@@ -490,6 +493,7 @@ The industry needs to prioritize failure mode design alongside capability improv
 
 As agents become more autonomous, failure modes become more critical. We need to design agents that are robust not just in success cases, but in failure cases too.`,
       featuredImage: unsplash('photo-1551288049-bebda4e38f71', { w: 1200, h: 800 }),
+      featuredImageCaption: 'AI systems need better failure handling as autonomous agents become more prevalent in business workflows.',
       published: true,
       publishedAt: daysAgo(16),
       readTime: 5,
@@ -519,6 +523,7 @@ Early adopters include customer service platforms and sales automation tools. On
 
 The research suggests that as agents become more capable of autonomous operation, alignment techniques will need to evolve from simple preference ranking to sophisticated multi-objective optimization.`,
       featuredImage: unsplash('photo-1498050108023-c5249f4df085', { w: 1200, h: 800 }),
+      featuredImageCaption: 'Alignment techniques are moving into task planners and tool-using agents beyond traditional chat applications.',
       published: true,
       publishedAt: daysAgo(1),
       readTime: 7,
@@ -542,6 +547,7 @@ Beta customers include e-commerce platforms using Vectrix for product search and
 
 Developers can start using Vectrix through a managed cloud service or self-hosted option. The API is compatible with existing vector database clients, making migration straightforward.`,
       featuredImage: unsplash('photo-1518770660439-4636190af475', { w: 1200, h: 800 }),
+      featuredImageCaption: 'Vectrix combines vector and keyword search in a unified low-latency database platform.',
       published: true,
       publishedAt: daysAgo(1),
       readTime: 5,
@@ -565,6 +571,7 @@ Enterprise customers are particularly interested in tracking costs as AI usage s
 
 The integration of AI observability into existing APM tools marks a shift from specialized AI monitoring vendors to unified platforms that can handle both traditional and AI workloads.`,
       featuredImage: unsplash('photo-1551288049-bebda4e38f71', { w: 1200, h: 800 }),
+      featuredImageCaption: 'APM platforms integrate AI-specific telemetry for comprehensive model observability.',
       published: true,
       publishedAt: daysAgo(2),
       readTime: 5,
@@ -592,7 +599,9 @@ Leading enterprises report that platform standardization has reduced time-to-pro
 
 However, some organizations are maintaining multi-cloud strategies for redundancy and risk mitigation. The challenge is balancing standardization with flexibility.`,
       featuredImage: unsplash('photo-1506744038136-46273834b3fb', { w: 1200, h: 800 }),
-      published: true,
+    
+      featuredImageCaption: 'AI technology and innovation in modern business applications.',
+  published: true,
       publishedAt: daysAgo(3),
       readTime: 6,
       featured: false,
@@ -615,6 +624,7 @@ The frameworks are particularly important for regulated industries like healthca
 
 Industry groups are working to create shared frameworks that multiple companies can adopt, reducing redundant work across the ecosystem. However, many companies are keeping their frameworks proprietary for competitive reasons.`,
       featuredImage: unsplash('photo-1556157382-97eda2d62296', { w: 1200, h: 800 }),
+      featuredImageCaption: 'Legal and procurement teams develop standardized frameworks for evaluating AI model providers.',
       published: true,
       publishedAt: daysAgo(4),
       readTime: 6,
@@ -638,6 +648,7 @@ The shift-left approach has reduced security incidents by 70% at companies that 
 
 Challenges remain around creating policies that are both comprehensive and flexible enough to allow legitimate use cases. Some teams are developing domain-specific policy languages that are easier for non-security experts to understand.`,
       featuredImage: unsplash('photo-1516259762381-22954d7d3ad2', { w: 1200, h: 800 }),
+      featuredImageCaption: 'Platform teams adopt policy-as-code to enforce AI guardrails consistently across environments.',
       published: true,
       publishedAt: daysAgo(5),
       readTime: 5,
@@ -661,6 +672,7 @@ The survey found that companies with mature AI infrastructure report 3x faster t
 
 Vendors are responding with new infrastructure offerings optimized for AI workloads. Cloud providers are launching dedicated AI regions with GPU availability guarantees, while hardware vendors are developing specialized chips for inference workloads.`,
       featuredImage: unsplash('photo-1451187580459-43490279c0fa', { w: 1200, h: 800 }),
+      featuredImageCaption: 'Enterprise CI Os prioritize AI infrastructure as foundation for scaled AI deployment.',
       published: true,
       publishedAt: daysAgo(6),
       readTime: 6,
@@ -690,7 +702,9 @@ Limitations include model size constraints and browser compatibility. However, a
 
 The trend represents a shift toward edge computing for AI workloads, complementing rather than replacing cloud-based inference for production systems.`,
       featuredImage: unsplash('photo-1498050108023-c5249f4df085', { w: 1200, h: 800 }),
-      published: true,
+    
+      featuredImageCaption: 'AI technology and innovation in modern business applications.',
+  published: true,
       publishedAt: daysAgo(8),
       readTime: 5,
       featured: false,
@@ -715,7 +729,9 @@ Privacy advocates note that synthetic data generation is not foolproof, and comp
 
 The SDK is available in Python and JavaScript, with integrations for popular data science workflows. Pricing is based on data volume and number of variables preserved.`,
       featuredImage: unsplash('photo-1492724441997-5dc865305da7', { w: 1200, h: 800 }),
-      published: true,
+    
+      featuredImageCaption: 'AI technology and innovation in modern business applications.',
+  published: true,
       publishedAt: daysAgo(9),
       readTime: 5,
       featured: false,
@@ -740,7 +756,9 @@ Notewise has raised $15 million in Series A funding from Insight Partners. The p
 
 Pricing starts at $20 per user per month for the professional tier, with enterprise plans available for teams requiring advanced integrations and compliance features.`,
       featuredImage: unsplash('photo-1519389950473-47ba0277781c', { w: 1200, h: 800 }),
-      published: true,
+    
+      featuredImageCaption: 'AI technology and innovation in modern business applications.',
+  published: true,
       publishedAt: daysAgo(10),
       readTime: 4,
       featured: false,
@@ -767,7 +785,9 @@ FinAgent raised $22 million in Series B funding led by Sequoia Capital. The comp
 
 Challenges include handling edge cases and ensuring compliance with accounting standards. The company maintains human review workflows for high-value transactions and unusual patterns.`,
       featuredImage: unsplash('photo-1521791136064-7986c2920216', { w: 1200, h: 800 }),
-      published: true,
+    
+      featuredImageCaption: 'AI technology and innovation in modern business applications.',
+  published: true,
       publishedAt: daysAgo(11),
       readTime: 6,
       featured: false,
@@ -794,7 +814,9 @@ Competition is increasing as cloud providers add fine-tuning capabilities to the
 
 Pricing is usage-based, with costs varying based on model size and training duration. The company offers both self-service and managed service options.`,
       featuredImage: unsplash('photo-1555949963-aa79dcee981c', { w: 1200, h: 800 }),
-      published: true,
+    
+      featuredImageCaption: 'AI technology and innovation in modern business applications.',
+  published: true,
       publishedAt: daysAgo(12),
       readTime: 5,
       featured: false,
@@ -823,7 +845,9 @@ However, high-end GPUs remain constrained, particularly the latest generation op
 
 The improved availability is expected to accelerate AI adoption as more companies can access the compute resources needed for training and inference. This could also moderate prices, which have been elevated due to supply constraints.`,
       featuredImage: unsplash('photo-1518770660439-4636190af475', { w: 1200, h: 800 }),
-      published: true,
+    
+      featuredImageCaption: 'AI technology and innovation in modern business applications.',
+  published: true,
       publishedAt: daysAgo(8),
       readTime: 4,
       featured: false,
@@ -850,7 +874,9 @@ Challenges remain around GPU memory constraints and compatibility across differe
 
 The update represents a significant step toward making WebAssembly a viable platform for compute-intensive applications beyond its current use in web applications and edge computing.`,
       featuredImage: unsplash('photo-1461749280684-dccba630e2f6', { w: 1200, h: 800 }),
-      published: true,
+    
+      featuredImageCaption: 'AI technology and innovation in modern business applications.',
+  published: true,
       publishedAt: daysAgo(9),
       readTime: 5,
       featured: false,
@@ -881,7 +907,9 @@ The milestone reflects broader interest in RAG as a practical application of LLM
 
 The framework is MIT-licensed and available on GitHub. Commercial support and cloud hosting options are available for enterprise users.`,
       featuredImage: unsplash('photo-1555066931-4365d14bab8c', { w: 1200, h: 800 }),
-      published: true,
+    
+      featuredImageCaption: 'AI technology and innovation in modern business applications.',
+  published: true,
       publishedAt: daysAgo(10),
       readTime: 4,
       featured: false,
@@ -908,7 +936,9 @@ The tool integrates with popular LLM providers and can be used alongside existin
 
 As LLM applications become more sophisticated, prompt management will become as important as code management. Tools like PromptLayer are making this transition easier for development teams.`,
       featuredImage: unsplash('photo-1555949963-aa79dcee981c', { w: 1200, h: 800 }),
-      published: true,
+    
+      featuredImageCaption: 'AI technology and innovation in modern business applications.',
+  published: true,
       publishedAt: daysAgo(11),
       readTime: 5,
       featured: false,
@@ -939,7 +969,9 @@ However, the architectures require careful tuning and may not generalize to all 
 
 The papers have sparked discussion in the research community about the tradeoffs between model scale and architectural sophistication. Many researchers see promise in combining both approaches.`,
       featuredImage: unsplash('photo-1451187580459-43490279c0fa', { w: 1200, h: 800 }),
-      published: true,
+    
+      featuredImageCaption: 'AI technology and innovation in modern business applications.',
+  published: true,
       publishedAt: daysAgo(12),
       readTime: 6,
       featured: false,
@@ -966,7 +998,9 @@ Challenges remain around handling edge cases and ensuring models don't hallucina
 
 The advances represent progress toward more general AI systems that can understand and generate content across multiple modalities. This could enable new categories of applications that seamlessly combine vision and language.`,
       featuredImage: unsplash('photo-1551288049-bebda4e38f71', { w: 1200, h: 800 }),
-      published: true,
+    
+      featuredImageCaption: 'AI technology and innovation in modern business applications.',
+  published: true,
       publishedAt: daysAgo(13),
       readTime: 6,
       featured: false,
@@ -993,7 +1027,9 @@ The cost reduction is enabling new business models where companies can offer cus
 
 However, parameter-efficient fine-tuning may not achieve the same performance as full fine-tuning for all tasks. Researchers are working to understand when these techniques are most effective.`,
       featuredImage: unsplash('photo-1551288049-bebda4e38f71', { w: 1200, h: 800 }),
-      published: true,
+    
+      featuredImageCaption: 'AI technology and innovation in modern business applications.',
+  published: true,
       publishedAt: daysAgo(14),
       readTime: 5,
       featured: false,
@@ -1024,7 +1060,9 @@ The debate needs to shift from "what models can do" to "how we use them responsi
 
 Until we address systemic risks, we're treating symptoms rather than underlying causes. The AI regulation debate needs to evolve beyond model capabilities to consider the full system.`,
       featuredImage: unsplash('photo-1451187580459-43490279c0fa', { w: 1200, h: 800 }),
-      published: true,
+    
+      featuredImageCaption: 'AI technology and innovation in modern business applications.',
+  published: true,
       publishedAt: daysAgo(10),
       readTime: 7,
       featured: false,
@@ -1051,7 +1089,9 @@ The real winner is the ecosystem that enables the most innovation. Right now, th
 
 As the AI market matures, we'll see more specialization. The question isn't whether open models beat closed models, but which approach enables the most valuable applications.`,
       featuredImage: unsplash('photo-1518770660439-4636190af475', { w: 1200, h: 800 }),
-      published: true,
+    
+      featuredImageCaption: 'AI technology and innovation in modern business applications.',
+  published: true,
       publishedAt: daysAgo(13),
       readTime: 6,
       featured: false,
@@ -1082,7 +1122,9 @@ The industry needs to prioritize failure mode design alongside capability improv
 
 As agents become more autonomous, failure modes become more critical. We need to design agents that are robust not just in success cases, but in failure cases too.`,
       featuredImage: unsplash('photo-1551288049-bebda4e38f71', { w: 1200, h: 800 }),
-      published: true,
+    
+      featuredImageCaption: 'AI technology and innovation in modern business applications.',
+  published: true,
       publishedAt: daysAgo(16),
       readTime: 5,
       featured: false,
@@ -1113,7 +1155,9 @@ Industry analysts note that on-device AI could differentiate Apple from competit
 
 The balance between privacy and capability will be key to Apple's AI strategy. The company is betting that privacy-conscious consumers will prefer on-device processing even if it means slightly less capable features.`,
       featuredImage: unsplash('photo-1511707171634-5f897ff02aa9', { w: 1200, h: 800 }),
-      published: true,
+    
+      featuredImageCaption: 'AI technology and innovation in modern business applications.',
+  published: true,
       publishedAt: hoursAgo(12),
       readTime: 4,
       featured: false,
@@ -1140,7 +1184,9 @@ Pricing remains competitive with other providers, with Google emphasizing value 
 
 The release represents Google's continued investment in AI capabilities despite recent challenges. The company is positioning Gemini as a comprehensive platform for AI applications, not just a language model.`,
       featuredImage: unsplash('photo-1558494949-ef010cbdcc31', { w: 1200, h: 800 }),
-      published: true,
+    
+      featuredImageCaption: 'AI technology and innovation in modern business applications.',
+  published: true,
       publishedAt: hoursAgo(18),
       readTime: 5,
       featured: false,
@@ -1221,7 +1267,9 @@ Industry analysts predict this will accelerate AI adoption across multiple secto
 
 The mass production represents a significant milestone in making AI more accessible and efficient. As the chips become more widely available, we can expect to see new applications and use cases emerge.`,
     featuredImage: unsplash('photo-1518770660439-4636190af475', { w: 1200, h: 800 }),
-    published: false, // Not published yet
+  
+      featuredImageCaption: 'AI technology and innovation in modern business applications.',
+  published: false, // Not published yet
     scheduledAt: futureDate,
     readTime: 5,
     featured: false,

@@ -9,6 +9,11 @@ interface AdBannerProps {
 }
 
 export function AdBanner({ imageUrl, linkUrl, type, alt = 'Advertisement' }: AdBannerProps) {
+  // Don't render if imageUrl is empty or invalid
+  if (!imageUrl || imageUrl.trim() === '') {
+    return null
+  }
+
   const bannerContent = (
     <div className="relative w-full">
       {type === 'homepage-main' ? (

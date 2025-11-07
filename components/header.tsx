@@ -27,7 +27,7 @@ export function Header() {
   const { data: session } = useSession()
   const [categories, setCategories] = useState<Category[]>([])
   const [logoUrl, setLogoUrl] = useState<string>('')
-  const [siteName, setSiteName] = useState<string>('THE WALL STREET JOURNAL')
+  const [siteName, setSiteName] = useState<string>('AIM MEDIA HOUSE')
   const [showSearch, setShowSearch] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [searchResults, setSearchResults] = useState<Article[]>([])
