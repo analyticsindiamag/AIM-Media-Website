@@ -2,11 +2,12 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { Search, ChevronDown, LogIn, LogOut, User } from 'lucide-react'
+import { Search, LogIn, LogOut, User } from 'lucide-react'
 import { useEffect, useMemo, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
 import { useSession, signIn, signOut } from 'next-auth/react'
 import { getArticleUrl } from '@/lib/article-url'
+import { StocksTicker } from './stocks-ticker'
 
 type Category = { id: string; name: string; slug: string }
 type Article = {
@@ -36,6 +37,7 @@ export function Header() {
   const [headerBarRightText, setHeaderBarRightText] = useState<string>('')
   const [headerBarRightLink, setHeaderBarRightLink] = useState<string>('')
   const [showUserMenu, setShowUserMenu] = useState(false)
+  const [isScrolled, setIsScrolled] = useState(false)
 
   useEffect(() => {
     fetch('/api/categories')
@@ -104,6 +106,15 @@ export function Header() {
   // Hide header on admin routes
   if (pathname?.startsWith('/admin')) return null
 
+  // Handle scroll for collapsible header
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50)
+    }
+    window.addEventListener('scroll', handleScroll)
+    return () => window.removeEventListener('scroll', handleScroll)
+  }, [])
+
   // Close user menu when clicking outside
   useEffect(() => {
     const handleClickOutside = () => {
@@ -118,10 +129,10 @@ export function Header() {
   const showHeaderBar = headerBarLeftText || headerBarRightText
 
   return (
-    <header className="bg-white border-b border-[var(--wsj-border-light)] sticky top-0 z-50">
+    <header className={`bg-white border-b border-[var(--wsj-border-light)] sticky top-0 z-50 transition-all duration-300 ${isScrolled ? 'shadow-sm' : ''}`}>
       {/* Top bar - Configurable dark bar */}
       {showHeaderBar && (
-        <div className="bg-[var(--wsj-bg-dark-gray)] text-[var(--wsj-text-white)]">
+        <div className={`bg-[var(--wsj-bg-dark-gray)] text-[var(--wsj-text-white)] transition-all duration-300 ${isScrolled ? 'h-0 overflow-hidden' : ''}`}>
           <div className="wsj-container">
             <div className="flex items-center justify-between h-[var(--wsj-header-top-height)] px-4 md:px-8" style={{ fontSize: 'var(--wsj-font-size-ticker)', fontFamily: 'var(--wsj-font-sans)' }}>
               <div className="flex items-center gap-3">
@@ -147,40 +158,43 @@ export function Header() {
         </div>
       )}
 
+      {/* Stocks Ticker - US Tech and AI Stocks - Collapsible on scroll */}
+      <div className={`transition-all duration-300 ${isScrolled ? 'h-0 overflow-hidden' : ''}`}>
+        <StocksTicker />
+      </div>
+
       {/* Main header section */}
-      <div className="bg-white">
+      <div className={`bg-white transition-all duration-300 ${isScrolled ? 'py-1' : ''}`}>
         <div className="wsj-container">
           {/* Logo and Search row */}
-          <div className="flex items-center justify-between py-3 px-4 md:px-8 border-b border-[var(--wsj-border-light)]">
+          <div className={`flex items-center justify-between px-4 md:px-8 border-b border-[var(--wsj-border-light)] transition-all duration-300 ${isScrolled ? 'py-1' : 'py-3'}`}>
             {/* Centered Logo */}
             <div className="flex-1"></div>
             <Link href="/" className="flex items-center justify-center flex-1" aria-label="Home">
               {logoUrl ? (
-                <div className="flex items-center justify-center h-10 md:h-12 w-full max-w-[300px]">
+                <div className={`flex items-center justify-center transition-all duration-300 ${isScrolled ? 'h-8 md:h-10' : 'h-10 md:h-12'}`}>
                   {logoUrl.startsWith('http') && !logoUrl.match(/supabase\.co|cloudinary\.com|unsplash\.com|googleusercontent\.com/) ? (
                     <img
                       src={logoUrl}
                       alt={siteName}
-                      className="max-h-full max-w-full object-contain"
-                      style={{ height: 'auto', width: 'auto' }}
+                      className="max-h-full w-auto object-contain"
+                      style={{ height: 'auto' }}
                       onError={() => setLogoUrl('')}
                     />
                   ) : (
-                    <div className="relative w-full h-full">
-                      <Image
-                        src={logoUrl}
-                        alt={siteName}
-                        fill
-                        className="object-contain"
-                        priority
-                        sizes="(max-width: 768px) 200px, 300px"
-                        onError={() => setLogoUrl('')}
-                      />
-                    </div>
+                    <Image
+                      src={logoUrl}
+                      alt={siteName}
+                      width={300}
+                      height={130}
+                      className="max-h-full w-auto object-contain"
+                      priority
+                      onError={() => setLogoUrl('')}
+                    />
                   )}
                 </div>
               ) : (
-                <div className="wsj-logo">
+                <div className={`wsj-logo transition-all duration-300 ${isScrolled ? 'text-lg md:text-xl' : ''}`}>
                   {siteName.split(' ').map((word, i) => {
                     if (i === 0 || i === siteName.split(' ').length - 1) {
                       return <span key={i} style={{ fontSize: '0.7em' }}>{word} </span>
@@ -190,16 +204,8 @@ export function Header() {
                 </div>
               )}
             </Link>
-            {/* Search and Auth buttons */}
+            {/* Auth button */}
             <div className="flex-1 flex justify-end items-center gap-4">
-              <button
-                onClick={() => setShowSearch(true)}
-                className="text-[var(--wsj-text-black)] hover:text-[var(--wsj-text-medium-gray)] transition-colors"
-                aria-label="Search"
-              >
-                <Search className="w-5 h-5" />
-              </button>
-              
               {/* User Auth */}
               {session?.user ? (
                 <div className="relative">
@@ -263,20 +269,30 @@ export function Header() {
           </div>
 
           {/* Main Navigation row */}
-          <nav className="px-4 md:px-8">
-            <div className="flex items-center justify-start gap-0 h-[var(--wsj-header-nav-height)] overflow-x-auto">
-              {navLinks.map((l, index) => {
-                const isActive = pathname === l.href || (l.href !== '/' && pathname?.startsWith(l.href))
-                return (
-                  <Link
-                    key={l.href}
-                    href={l.href}
-                    className={`wsj-nav-link ${isActive ? 'wsj-nav-link-active' : ''}`}
-                  >
-                    {l.label}
-                  </Link>
-                )
-              })}
+          <nav className={`px-4 md:px-8 transition-all duration-300 ${isScrolled ? 'hidden' : ''}`}>
+            <div className="flex items-center justify-between gap-0 h-[var(--wsj-header-nav-height)] overflow-x-auto">
+              <div className="flex items-center gap-0">
+                {navLinks.map((l, index) => {
+                  const isActive = pathname === l.href || (l.href !== '/' && pathname?.startsWith(l.href))
+                  return (
+                    <Link
+                      key={l.href}
+                      href={l.href}
+                      className={`wsj-nav-link ${isActive ? 'wsj-nav-link-active' : ''}`}
+                    >
+                      {l.label}
+                    </Link>
+                  )
+                })}
+              </div>
+              {/* Search icon at the end of navigation */}
+              <button
+                onClick={() => setShowSearch(true)}
+                className="text-[var(--wsj-text-black)] hover:text-[var(--wsj-text-medium-gray)] transition-colors p-2"
+                aria-label="Search"
+              >
+                <Search className="w-5 h-5" />
+              </button>
             </div>
           </nav>
         </div>

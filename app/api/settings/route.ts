@@ -26,7 +26,11 @@ export async function PUT(request: NextRequest) {
       headerBarLeftText,
       headerBarLeftLink,
       headerBarRightText,
-      headerBarRightLink
+      headerBarRightLink,
+      designSystemColorsJson,
+      designSystemTypographyJson,
+      designSystemSpacingJson,
+      designSystemLayoutJson
     } = body
     const s = await prisma.settings.update({
       where: { id: 'default' },
@@ -39,7 +43,11 @@ export async function PUT(request: NextRequest) {
         headerBarLeftText,
         headerBarLeftLink,
         headerBarRightText,
-        headerBarRightLink
+        headerBarRightLink,
+        designSystemColorsJson,
+        designSystemTypographyJson,
+        designSystemSpacingJson,
+        designSystemLayoutJson
       },
     })
     return NextResponse.json(s)

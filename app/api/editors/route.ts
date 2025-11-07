@@ -19,7 +19,7 @@ export async function GET() {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { name, email, bio, avatar } = body
+    const { name, email, bio, avatar, image, title, twitter, linkedin } = body
 
     // Generate slug from name
     const slug = name
@@ -42,6 +42,10 @@ export async function POST(request: NextRequest) {
         slug: uniqueSlug,
         bio,
         avatar,
+        image,
+        title,
+        twitter,
+        linkedin,
       },
     })
 

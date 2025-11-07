@@ -17,14 +17,94 @@ function generateSlug(name) {
 }
 
 async function main() {
-  // Basic settings - includes all new fields
+  // Default design system values (matching reference design system)
+  const defaultDesignSystem = {
+    colors: {
+      bgWhite: '#FFFFFF',
+      bgBlack: '#000000',
+      bgDarkGray: '#1a1a1a',
+      bgLightGray: '#F8F8F8', // Updated: was #f5f5f5
+      bgTicker: '#2a2a2a',
+      textBlack: '#111111', // Updated: was rgb(34, 34, 34) / #222222
+      textWhite: '#ffffff',
+      textDarkGray: '#333333',
+      textMediumGray: '#666666',
+      textLightGray: '#999999',
+      borderLight: '#E5E5E5', // Updated: was #e6e6e6
+      borderMedium: '#cccccc',
+      borderDark: '#333333',
+      borderQuote: '#DDDDDD', // New: soft gray for quote borders
+      bluePrimary: '#0050A4', // Updated: was #0066cc - muted blue for links
+      blueHover: '#003d82', // Updated: darker shade of new blue
+      blueLight: '#0070f3',
+      redNegative: '#dc3545',
+      greenPositive: '#28a745',
+      overlayDark: 'rgba(0, 0, 0, 0.5)',
+      overlayLight: 'rgba(0, 0, 0, 0.3)',
+    },
+    typography: {
+      fontSerif: "'Old Standard TT', 'EB Garamond', Georgia, 'Times', serif", // Display font
+      fontSans: "'Merriweather', Georgia, serif", // Body text - should be serif per spec
+      fontSizeTicker: '11px',
+      fontSizeXs: '12px', // Updated: was 11px
+      fontSizeSm: '14px', // Updated: was 13px - for meta/nav
+      fontSizeBase: '16px', // Body text
+      fontSizeMd: '18px', // Updated: was 17px
+      fontSizeLg: '20px', // Updated: was 19px - for decks/subheadings
+      fontSizeXl: '22px', // Updated: was 21px
+      fontSize2xl: '24px', // H3
+      fontSize3xl: '28px', // H2
+      fontSize4xl: '32px',
+      fontSize5xl: '36px',
+      fontSize6xl: '42px', // H1
+      fontSize7xl: '48px', // H1 on desktop
+      fontSizeQuote: '20px', // New: for pull quotes (18-22px range)
+      fontWeightLight: '300',
+      fontWeightNormal: '400', // Updated: was 350
+      fontWeightMedium: '500',
+      fontWeightSemibold: '600',
+      fontWeightBold: '700',
+      lineHeightTight: '1.2', // Updated: was 1.15 - for headings
+      lineHeightNormal: '1.25', // Updated: was 1.17
+      lineHeightRelaxed: '1.3',
+      lineHeightDeck: '1.4', // New: for subheadings and quotes
+      lineHeightLoose: '1.5', // Body text (24px / 16px)
+      lineHeightArticle: '1.6', // Comfortable reading
+    },
+    spacing: {
+      spacingXs: '0.25rem', // 4px
+      spacingSm: '0.5rem', // 8px - base grid unit
+      spacingMd: '1rem', // 16px - paragraph spacing
+      spacingLg: '1.5rem', // 24px - gutters
+      spacingXl: '2rem', // 32px - gutters/padding
+      spacing2xl: '2.5rem', // 40px - section padding (updated: was 3rem/48px)
+      spacing3xl: '4rem', // 64px
+    },
+    layout: {
+      containerMaxWidth: '1200px', // Updated: was 1280px
+      containerPaddingX: '1rem', // 16px mobile
+      containerPaddingXMd: '1.5rem', // 24px desktop (updated: was 2rem/32px)
+      articleMaxWidth: '850px', // Updated: was 1200px - optimal for 60-75 chars
+      headerTopHeight: '32px',
+      headerLogoSize: '40px',
+      headerNavHeight: '44px',
+      buttonBorderRadius: '2px',
+      buttonPaddingX: '16px',
+      buttonPaddingY: '8px',
+      borderWidth: '1px',
+      borderRadius: '0',
+      transitionFast: '150ms',
+      transitionBase: '200ms',
+      transitionSlow: '300ms',
+    },
+  }
+
+  // Basic settings - includes all new fields including design system
   await prisma.settings.upsert({
     where: { id: 'default' },
-    update: {},
-    create: {
-      id: 'default',
+    update: {
       siteName: 'AI Tech News',
-      logoUrl: null,
+      logoUrl: '/logo.png',
       navLinksJson: JSON.stringify([
         { label: 'TECH', href: '/category/tech' },
         { label: 'AI', href: '/category/ai' },
@@ -45,61 +125,127 @@ async function main() {
       headerBarLeftLink: '/category/ai',
       headerBarRightText: 'AI TECH NEWS | Tech',
       headerBarRightLink: '/',
+      designSystemColorsJson: JSON.stringify(defaultDesignSystem.colors),
+      designSystemTypographyJson: JSON.stringify(defaultDesignSystem.typography),
+      designSystemSpacingJson: JSON.stringify(defaultDesignSystem.spacing),
+      designSystemLayoutJson: JSON.stringify(defaultDesignSystem.layout),
+    },
+    create: {
+      id: 'default',
+      siteName: 'AI Tech News',
+      logoUrl: '/logo.png',
+      navLinksJson: JSON.stringify([
+        { label: 'TECH', href: '/category/tech' },
+        { label: 'AI', href: '/category/ai' },
+        { label: 'STARTUPS', href: '/category/ai-startups' },
+        { label: 'OPINION', href: '/category/opinion' },
+        { label: 'AI TOOLS', href: '/category/ai-tools' },
+        { label: 'ENTERPRISE AI', href: '/category/enterprise-ai' },
+        { label: 'RESEARCH', href: '/category/research' },
+      ]),
+      footerLinksJson: JSON.stringify([
+        { label: 'About', href: '/about' },
+        { label: 'Contact', href: '/contact' },
+        { label: 'Privacy', href: '/privacy' },
+        { label: 'Terms', href: '/terms' },
+      ]),
+      subscribeCta: 'Join 10,000+ readers for weekly AI updates.',
+      headerBarLeftText: 'AI',
+      headerBarLeftLink: '/category/ai',
+      headerBarRightText: 'AI TECH NEWS | Tech',
+      headerBarRightLink: '/',
+      // Design system settings with defaults
+      designSystemColorsJson: JSON.stringify(defaultDesignSystem.colors),
+      designSystemTypographyJson: JSON.stringify(defaultDesignSystem.typography),
+      designSystemSpacingJson: JSON.stringify(defaultDesignSystem.spacing),
+      designSystemLayoutJson: JSON.stringify(defaultDesignSystem.layout),
     },
   })
 
-  // Editors - more diverse team
+  // Editors - more diverse team with social media links
   const [editorA, editorB, editorC, editorD] = await Promise.all([
     prisma.editor.upsert({
       where: { email: 'sara@aitechnews.com' },
       update: {
-        slug: generateSlug('Sara Patel'), // Ensure slug is set on update too
+        slug: generateSlug('Sara Patel'),
+        title: 'Senior Reporter, AIM MEDIA HOUSE',
+        twitter: '@sarapatel',
+        linkedin: 'https://linkedin.com/in/sarapatel',
+        bio: 'Sara Patel is a senior reporter at AIM Media House, covering the intersection of enterprise AI, cloud platforms, and technology governance.\n\nBefore joining the publication in 2020, she was an investigative reporter at Tech Insights, where she covered data privacy and cybersecurity policy. Her investigations spurred discussions on federal AI regulation and corporate transparency.\n\nShe began her career covering the tech industry for Silicon Valley Observer.',
       },
       create: {
         name: 'Sara Patel',
         email: 'sara@aitechnews.com',
         slug: generateSlug('Sara Patel'),
-        bio: 'Senior editor covering enterprise AI, platforms, and governance.',
+        title: 'Senior Reporter, AIM MEDIA HOUSE',
+        bio: 'Sara Patel is a senior reporter at AIM Media House, covering the intersection of enterprise AI, cloud platforms, and technology governance.\n\nBefore joining the publication in 2020, she was an investigative reporter at Tech Insights, where she covered data privacy and cybersecurity policy. Her investigations spurred discussions on federal AI regulation and corporate transparency.\n\nShe began her career covering the tech industry for Silicon Valley Observer.',
         avatar: unsplash('photo-1531123414780-f74287bb7a5d', { w: 256, h: 256, q: 80 }),
+        image: unsplash('photo-1531123414780-f74287bb7a5d', { w: 256, h: 256, q: 80 }),
+        twitter: '@sarapatel',
+        linkedin: 'https://linkedin.com/in/sarapatel',
       },
     }),
     prisma.editor.upsert({
       where: { email: 'luis@aitechnews.com' },
       update: {
-        slug: generateSlug('Luis Hernandez'), // Ensure slug is set on update too
+        slug: generateSlug('Luis Hernandez'),
+        title: 'Technology Reporter, AIM MEDIA HOUSE',
+        twitter: '@luishernandez',
+        linkedin: 'https://linkedin.com/in/luishernandez',
+        bio: 'Luis Hernandez is a technology reporter at AIM Media House, focusing on AI startups, venture capital, and product innovation.\n\nBefore joining in 2021, he covered emerging technology markets for Venture Beat and was part of reporting teams that won industry recognition for startup ecosystem analysis.\n\nHe holds a degree in Computer Science and Journalism from Stanford University.',
       },
       create: {
         name: 'Luis Hernandez',
         email: 'luis@aitechnews.com',
         slug: generateSlug('Luis Hernandez'),
-        bio: 'Reports on AI startups, product launches, and funding rounds.',
+        title: 'Technology Reporter, AIM MEDIA HOUSE',
+        bio: 'Luis Hernandez is a technology reporter at AIM Media House, focusing on AI startups, venture capital, and product innovation.\n\nBefore joining in 2021, he covered emerging technology markets for Venture Beat and was part of reporting teams that won industry recognition for startup ecosystem analysis.\n\nHe holds a degree in Computer Science and Journalism from Stanford University.',
         avatar: unsplash('photo-1527980965255-d3b416303d12', { w: 256, h: 256, q: 80 }),
+        image: unsplash('photo-1527980965255-d3b416303d12', { w: 256, h: 256, q: 80 }),
+        twitter: '@luishernandez',
+        linkedin: 'https://linkedin.com/in/luishernandez',
       },
     }),
     prisma.editor.upsert({
       where: { email: 'emma@aitechnews.com' },
       update: {
-        slug: generateSlug('Emma Chen'), // Ensure slug is set on update too
+        slug: generateSlug('Emma Chen'),
+        title: 'AI Research Reporter, AIM MEDIA HOUSE',
+        twitter: '@emmachen',
+        linkedin: 'https://linkedin.com/in/emmachen',
+        bio: 'Emma Chen is an AI research reporter at AIM Media House, specializing in machine learning breakthroughs, academic research, and scientific developments in artificial intelligence.\n\nShe joined the team in 2019 after completing her PhD in Computer Science at MIT. Her work bridges the gap between academic research and practical applications, making complex AI concepts accessible to a broad audience.\n\nShe has published research papers on natural language processing and continues to contribute to the academic community.',
       },
       create: {
         name: 'Emma Chen',
         email: 'emma@aitechnews.com',
         slug: generateSlug('Emma Chen'),
-        bio: 'Tech reporter specializing in AI research and breakthroughs.',
+        title: 'AI Research Reporter, AIM MEDIA HOUSE',
+        bio: 'Emma Chen is an AI research reporter at AIM Media House, specializing in machine learning breakthroughs, academic research, and scientific developments in artificial intelligence.\n\nShe joined the team in 2019 after completing her PhD in Computer Science at MIT. Her work bridges the gap between academic research and practical applications, making complex AI concepts accessible to a broad audience.\n\nShe has published research papers on natural language processing and continues to contribute to the academic community.',
         avatar: unsplash('photo-1573496359142-b8d87734a5a2', { w: 256, h: 256, q: 80 }),
+        image: unsplash('photo-1573496359142-b8d87734a5a2', { w: 256, h: 256, q: 80 }),
+        twitter: '@emmachen',
+        linkedin: 'https://linkedin.com/in/emmachen',
       },
     }),
     prisma.editor.upsert({
       where: { email: 'michael@aitechnews.com' },
       update: {
-        slug: generateSlug('Michael Thompson'), // Ensure slug is set on update too
+        slug: generateSlug('Michael Thompson'),
+        title: 'Opinion Columnist, AIM MEDIA HOUSE',
+        twitter: '@michaelthompson',
+        linkedin: 'https://linkedin.com/in/michaelthompson',
+        bio: 'Michael Thompson is an opinion columnist at AIM Media House, focusing on AI ethics, policy implications, and the societal impact of artificial intelligence.\n\nBefore joining the editorial team in 2018, he was a policy analyst at the Center for Technology Ethics, where he advised lawmakers on AI regulation and digital rights. His columns have influenced debates on algorithmic accountability and AI safety.\n\nHe began his career in technology journalism at TechCrunch and holds degrees in Philosophy and Computer Science.',
       },
       create: {
         name: 'Michael Thompson',
         email: 'michael@aitechnews.com',
         slug: generateSlug('Michael Thompson'),
-        bio: 'Opinion columnist and analyst covering AI policy and ethics.',
+        title: 'Opinion Columnist, AIM MEDIA HOUSE',
+        bio: 'Michael Thompson is an opinion columnist at AIM Media House, focusing on AI ethics, policy implications, and the societal impact of artificial intelligence.\n\nBefore joining the editorial team in 2018, he was a policy analyst at the Center for Technology Ethics, where he advised lawmakers on AI regulation and digital rights. His columns have influenced debates on algorithmic accountability and AI safety.\n\nHe began his career in technology journalism at TechCrunch and holds degrees in Philosophy and Computer Science.',
         avatar: unsplash('photo-1507003211169-0a1dd7228f2d', { w: 256, h: 256, q: 80 }),
+        image: unsplash('photo-1507003211169-0a1dd7228f2d', { w: 256, h: 256, q: 80 }),
+        twitter: '@michaelthompson',
+        linkedin: 'https://linkedin.com/in/michaelthompson',
       },
     }),
   ])
@@ -223,11 +369,137 @@ Industry analysts note that edge AI is becoming a key differentiator as companie
     publishedAt: hoursAgo(6),
     readTime: 4,
     featured: true,
+    subFeatured: false,
+    exclusive: false,
     categoryId: aiStartups.id,
     editorId: editorB.id,
     metaTitle: 'VisionAI raises $18M for edge camera AI',
     metaDescription: 'Startup brings low-power vision models to production cameras for logistics and retail.',
   })
+
+  // Sub-featured articles (2 articles shown below main featured on homepage)
+  await Promise.all([
+    createArticle({
+      title: 'Google releases Gemini 2.0 with improved reasoning',
+      slug: 'google-gemini-2-improved-reasoning',
+      excerpt: 'Latest model shows significant improvements on mathematical and logical tasks.',
+      content: `Google released Gemini 2.0, a major update to its flagship language model with improved reasoning capabilities, particularly on mathematical and logical tasks.
+
+The new model achieves state-of-the-art performance on benchmarks like MATH, GSM8K, and HumanEval, surpassing previous models including GPT-4. The improvements come from architectural changes and training techniques focused on reasoning.
+
+"We've made reasoning a first-class capability," said Google AI lead Demis Hassabis. "The model can now handle complex multi-step problems more reliably."
+
+The model is available through Google Cloud's Vertex AI platform and the Gemini API. Google is also releasing smaller versions optimized for specific use cases like coding and analysis.
+
+Early users report improvements in code generation, data analysis, and problem-solving tasks. However, the model still has limitations and can make errors on complex reasoning tasks.
+
+The release intensifies competition in the AI space, with Google, OpenAI, and Anthropic all releasing improved models this year. The rapid pace of improvement suggests the field is far from maturity.
+
+Pricing remains competitive with other providers, with Google emphasizing value over raw capability. The company is also offering fine-tuning services for enterprise customers.
+
+The release represents Google's continued investment in AI capabilities despite recent challenges. The company is positioning Gemini as a comprehensive platform for AI applications, not just a language model.`,
+      featuredImage: unsplash('photo-1558494949-ef010cbdcc31', { w: 1200, h: 800 }),
+      published: true,
+      publishedAt: hoursAgo(18),
+      readTime: 5,
+      featured: false,
+      subFeatured: true,
+      exclusive: false,
+      categoryId: ai.id,
+      editorId: editorC.id,
+    }),
+    createArticle({
+      title: 'Apple announces new AI features for iPhone',
+      slug: 'apple-announces-ai-features-iphone',
+      excerpt: 'Siri improvements and on-device AI processing coming in iOS 18.',
+      content: `Apple unveiled significant AI enhancements for iPhone at its developer conference, including improved Siri capabilities and on-device AI processing that works without sending data to servers.
+
+The new features include smarter voice commands, improved text generation, and enhanced photo editing powered by on-device models. The company emphasized privacy, with all processing happening locally on the device.
+
+"Siri is getting smarter while staying private," said Apple VP of AI. "Everything happens on your device, so your data never leaves your phone."
+
+The on-device approach addresses privacy concerns while enabling faster responses. However, it requires more powerful chips, which Apple has developed specifically for AI workloads.
+
+The features will be available in iOS 18, expected to launch this fall. Developers can start building with the new AI APIs in the beta release.
+
+The announcement represents Apple's most significant AI push since introducing Siri. The company has been slower than competitors to embrace generative AI, but the new features suggest a more aggressive strategy.
+
+Industry analysts note that on-device AI could differentiate Apple from competitors who rely on cloud-based processing. However, cloud-based approaches can leverage more powerful models.
+
+The balance between privacy and capability will be key to Apple's AI strategy. The company is betting that privacy-conscious consumers will prefer on-device processing even if it means slightly less capable features.`,
+      featuredImage: unsplash('photo-1511707171634-5f897ff02aa9', { w: 1200, h: 800 }),
+      published: true,
+      publishedAt: hoursAgo(12),
+      readTime: 4,
+      featured: false,
+      subFeatured: true,
+      exclusive: false,
+      categoryId: tech.id,
+      editorId: editorC.id,
+    }),
+  ])
+
+  // Exclusive stories (shown in exclusive section)
+  await Promise.all([
+    createArticle({
+      title: 'Enterprise genAI moves from pilots to platforms',
+      slug: 'enterprise-genai-moves-from-pilots-to-platforms',
+      excerpt: 'A wave of platform standardization is turning bespoke pilots into governed, scalable AI capabilities.',
+      content: `Enterprises are consolidating around a smaller set of AI platforms with unified security, monitoring, and governance capabilities. The shift from proof-of-concept pilots to production platforms represents a maturing market.
+
+Companies like Microsoft, AWS, and Google are seeing increased adoption of their unified AI platforms as enterprises seek to reduce complexity and standardize on a single stack. This consolidation is driven by the need for consistent security policies, cost management, and compliance controls.
+
+"Early adopters experimented with multiple AI services and tools," said research director James Park. "Now they're standardizing on platforms that provide end-to-end governance."
+
+The platform approach includes unified authentication, audit logging, cost tracking, and policy enforcement across all AI services. This allows IT teams to maintain control while enabling business units to deploy AI applications.
+
+Leading enterprises report that platform standardization has reduced time-to-production for new AI applications by 60% while improving security posture. The trend is expected to accelerate as more companies move beyond experimental use cases.
+
+However, some organizations are maintaining multi-cloud strategies for redundancy and risk mitigation. The challenge is balancing standardization with flexibility.`,
+      featuredImage: unsplash('photo-1506744038136-46273834b3fb', { w: 1200, h: 800 }),
+      published: true,
+      publishedAt: daysAgo(3),
+      readTime: 6,
+      featured: false,
+      subFeatured: false,
+      exclusive: true,
+      categoryId: enterpriseAI.id,
+      editorId: editorA.id,
+    }),
+    createArticle({
+      title: 'AI agents need better failure modes',
+      slug: 'ai-agents-better-failure-modes',
+      excerpt: 'Current agent systems fail silently or catastrophically. We need graceful degradation.',
+      content: `AI agents are becoming more capable, but they're also becoming more dangerous because they lack good failure modes. When agents encounter situations they can't handle, they either fail silently or make catastrophic errors.
+
+Consider an agent that's supposed to book a flight. If it encounters an error, it might book the wrong flight, book multiple flights, or fail without notifying anyone. None of these are acceptable failure modes.
+
+"Agents need to know when to stop," argues researcher Sara Patel. "And they need to fail in ways that humans can understand and fix."
+
+Good failure modes include:
+- Recognizing when tasks are outside capabilities
+- Escalating to humans with clear explanations
+- Providing partial results when full completion isn't possible
+- Explaining what went wrong and why
+
+Current agent systems often lack these capabilities. They'll attempt tasks beyond their capabilities, make errors without acknowledgment, or fail in ways that are difficult to diagnose.
+
+This is a solvable problem. Techniques like confidence scoring, uncertainty quantification, and hierarchical task decomposition can help agents recognize their limitations.
+
+The industry needs to prioritize failure mode design alongside capability improvements. More capable agents that fail badly are worse than less capable agents that fail gracefully.
+
+As agents become more autonomous, failure modes become more critical. We need to design agents that are robust not just in success cases, but in failure cases too.`,
+      featuredImage: unsplash('photo-1551288049-bebda4e38f71', { w: 1200, h: 800 }),
+      published: true,
+      publishedAt: daysAgo(16),
+      readTime: 5,
+      featured: false,
+      subFeatured: false,
+      exclusive: true,
+      categoryId: opinion.id,
+      editorId: editorD.id,
+    }),
+  ])
 
   // Recent articles (last 2 days)
   await Promise.all([
@@ -877,59 +1149,6 @@ The release represents Google's continued investment in AI capabilities despite 
     }),
   ])
 
-  // Sponsored Banners - all types (use createMany with skipDuplicates or individual creates with catch)
-  try {
-    await Promise.all([
-      prisma.sponsoredBanner.create({
-        data: {
-          title: 'Enterprise AI Platform',
-          imageUrl: unsplash('photo-1506744038136-46273834b3fb', { w: 728, h: 90 }),
-          linkUrl: 'https://example.com/enterprise-ai',
-          type: 'homepage-main',
-          active: true,
-          displayOrder: 1,
-        },
-      }).catch(() => {}), // Ignore if already exists
-      prisma.sponsoredBanner.create({
-        data: {
-          title: 'AI Development Tools',
-          imageUrl: unsplash('photo-1555949963-aa79dcee981c', { w: 300, h: 600 }),
-          linkUrl: 'https://example.com/ai-tools',
-          type: 'homepage-side',
-          active: true,
-          displayOrder: 1,
-        },
-      }).catch(() => {}),
-      prisma.sponsoredBanner.create({
-        data: {
-          title: 'AI Research Platform',
-          imageUrl: unsplash('photo-1451187580459-43490279c0fa', { w: 300, h: 600 }),
-          linkUrl: 'https://example.com/research',
-          type: 'article-side',
-          active: true,
-          displayOrder: 1,
-        },
-      }).catch(() => {}),
-      prisma.sponsoredBanner.create({
-        data: {
-          title: 'Upcoming AI Conference',
-          imageUrl: unsplash('photo-1519389950473-47ba0277781c', { w: 728, h: 90 }),
-          linkUrl: 'https://example.com/conference',
-          type: 'homepage-main',
-          active: true,
-          startDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // Starts in 7 days
-          endDate: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000), // Ends in 30 days
-          displayOrder: 2,
-        },
-      }).catch(() => {}),
-    ])
-  } catch (error) {
-    // Ignore duplicate errors
-    if (!error.message?.includes('Unique constraint')) {
-      console.warn('Warning creating sponsored banners:', error.message)
-    }
-  }
-
   // Subscribers - sample email list
   await Promise.all([
     prisma.subscriber.create({
@@ -1244,11 +1463,10 @@ United States</p>
     }
   }
 
-  console.log('✅ Seeded: settings, editors, categories, articles, sponsored banners, subscribers, comments, scheduled articles, and static pages')
+  console.log('✅ Seeded: settings, editors, categories, articles, subscribers, comments, scheduled articles, and static pages')
   console.log(`✅ Created ${await prisma.article.count()} articles`)
   console.log(`✅ Created ${await prisma.category.count()} categories`)
   console.log(`✅ Created ${await prisma.editor.count()} editors`)
-  console.log(`✅ Created ${await prisma.sponsoredBanner.count()} sponsored banners`)
   console.log(`✅ Created ${await prisma.subscriber.count()} subscribers`)
   console.log(`✅ Created ${await prisma.comment.count()} comments`)
   console.log(`✅ Created ${await prisma.staticPage.count()} static pages`)

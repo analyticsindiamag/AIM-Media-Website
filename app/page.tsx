@@ -2,7 +2,6 @@ import type { Metadata } from 'next'
 import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
 import Image from 'next/image'
-import { format } from 'date-fns'
 import { MessageCircle, Clock } from 'lucide-react'
 import { AdBannerFetcher } from '@/components/ad-banner-fetcher'
 import { getArticleUrl } from '@/lib/article-url'
@@ -18,54 +17,16 @@ export const metadata: Metadata = {
 
 export default async function HomePage() {
   try {
-    // Fetch articles for WSJ-style layout
-    const [centerArticle, allArticles, categories] = await Promise.all([
-      // Center: Featured large image article
-      (async () => {
-        try {
-          const featured = await prisma.article.findFirst({
-            where: { 
-              published: true, 
-              featured: true,
-              publishedAt: { not: null }
-            },
-            orderBy: { publishedAt: 'desc' },
-            include: { 
-              category: true, 
-              editor: true,
-              featuredImageMedia: {
-                select: { id: true },
-              },
-            },
-          })
-          if (featured) return featured
-          return prisma.article.findFirst({
-            where: { 
-              published: true,
-              publishedAt: { not: null }
-            },
-            orderBy: { publishedAt: 'desc' },
-            include: { 
-              category: true, 
-              editor: true,
-              featuredImageMedia: {
-                select: { id: true },
-              },
-            },
-          })
-        } catch (err) {
-          console.error('Error fetching featured article:', err)
-          return null
-        }
-      })(),
-      // Get all articles for left and right columns
-      prisma.article.findMany({
+    // Fetch articles for new layout
+    const [featuredArticle, subFeaturedArticles, latestArticles, popularArticles, exclusiveArticles, categories] = await Promise.all([
+      // Featured article (main article in center)
+      prisma.article.findFirst({
         where: { 
-          published: true,
+          published: true, 
+          featured: true,
           publishedAt: { not: null }
         },
         orderBy: { publishedAt: 'desc' },
-        take: 30,
         include: { 
           category: true, 
           editor: true,
@@ -74,38 +35,93 @@ export default async function HomePage() {
           },
         },
       }),
-      // Get categories for horizontal scrolling section
+      // Sub-featured articles (2 articles below main featured)
+      prisma.article.findMany({
+        where: { 
+          published: true,
+          subFeatured: true,
+          publishedAt: { not: null }
+        },
+        orderBy: { publishedAt: 'desc' },
+        take: 2,
+        include: { 
+          category: true, 
+          editor: true,
+          featuredImageMedia: {
+            select: { id: true },
+          },
+        },
+      }),
+      // Latest articles for left column
+      prisma.article.findMany({
+        where: { 
+          published: true,
+          featured: false,
+          subFeatured: false,
+          publishedAt: { not: null }
+        },
+        orderBy: { publishedAt: 'desc' },
+        take: 10,
+        include: { 
+          category: true, 
+          editor: true,
+          featuredImageMedia: {
+            select: { id: true },
+          },
+        },
+      }),
+      // Popular articles (by views) for right column
+      prisma.article.findMany({
+        where: { 
+          published: true,
+          publishedAt: { not: null }
+        },
+        orderBy: { views: 'desc' },
+        take: 6,
+        include: { 
+          category: true, 
+          editor: true,
+          featuredImageMedia: {
+            select: { id: true },
+          },
+        },
+      }),
+      // Exclusive articles
+      prisma.article.findMany({
+        where: { 
+          published: true,
+          exclusive: true,
+          publishedAt: { not: null }
+        },
+        orderBy: { publishedAt: 'desc' },
+        take: 4,
+        include: { 
+          category: true, 
+          editor: true,
+          featuredImageMedia: {
+            select: { id: true },
+          },
+        },
+      }),
+      // Get categories
       prisma.category.findMany({
         orderBy: [
           { order: 'asc' },
-          { name: 'asc' }, // Fallback to name if order is same
+          { name: 'asc' },
         ],
       }),
     ])
 
-    // Filter out center article from other columns and ensure required relations exist
-    const articlesWithoutCenter = (allArticles || []).filter(
-      (article) => article && article.category && article.editor && (!centerArticle || article.id !== centerArticle.id)
-    )
-
-    // Left column: Main news articles
-    const leftColumnArticles = articlesWithoutCenter.slice(0, 8)
-    
-    // Right column: Trending articles (by views, fallback to recent)
-    const trendingArticles = articlesWithoutCenter
-      .sort((a, b) => (b.views || 0) - (a.views || 0))
-      .slice(0, 6)
-    
-    // Bottom center: More articles
-    const bottomCenterArticles = articlesWithoutCenter.slice(8, 14)
-
-    const today = format(new Date(), 'EEEE, MMMM d, yyyy')
     const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
 
+    // If no featured article, use the first latest
+    const mainFeaturedArticle = featuredArticle || latestArticles[0]
+    const displayLatestArticles = featuredArticle ? latestArticles : latestArticles.slice(1)
+
     // ArticleList Schema for Homepage
-    const allArticlesForSchema = centerArticle 
-      ? [centerArticle, ...articlesWithoutCenter].slice(0, 20)
-      : articlesWithoutCenter.slice(0, 20)
+    const allArticlesForSchema = [mainFeaturedArticle, ...subFeaturedArticles, ...displayLatestArticles]
+      .filter(Boolean)
+      .slice(0, 20)
 
     const articleListSchema = {
       '@context': 'https://schema.org',
@@ -141,7 +157,7 @@ export default async function HomePage() {
     }
 
     // If no articles, show empty state
-    if (!centerArticle && articlesWithoutCenter.length === 0) {
+    if (!mainFeaturedArticle && displayLatestArticles.length === 0) {
       return (
         <div className="bg-white min-h-screen">
           <div className="wsj-container py-6 md:py-8">
@@ -164,285 +180,286 @@ export default async function HomePage() {
           }}
         />
         <div className="bg-white min-h-screen">
-        {/* Main Header Banner - Horizontal */}
-        <div className="wsj-container py-4">
-          <AdBannerFetcher type="homepage-main" />
-        </div>
-
-        <div className="wsj-container py-6 md:py-8">
-          {/* Date */}
-          <div className="mb-6 pb-4 border-b border-[var(--wsj-border-light)]">
-            <div className="text-[var(--wsj-font-size-sm)] text-[var(--wsj-text-medium-gray)] font-sans">
-              {today}
-            </div>
-          </div>
-
-          {/* Three Column Layout - WSJ Style */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 mb-12">
-            {/* Left Column - Main Articles List */}
-            <div className="lg:col-span-4 space-y-6">
-              {leftColumnArticles.map((article, index) => {
-                const articleUrl = getArticleUrl(article)
-                return (
-                <article key={article.id} className="group">
-                  <Link href={articleUrl} className="block">
-                    <h2 className="font-serif font-bold text-[22px] md:text-[24px] leading-[var(--wsj-line-height-normal)] mb-2 text-[var(--wsj-text-black)] group-hover:underline">
-                      {article.title}
-                    </h2>
-                    {article.excerpt && (
-                      <p className="text-[var(--wsj-font-size-md)] text-[var(--wsj-text-dark-gray)] mb-3 line-clamp-2 font-serif leading-[var(--wsj-line-height-loose)]">
-                        {article.excerpt}
-                      </p>
-                    )}
-                    <div className="flex items-center gap-4 text-[var(--wsj-font-size-sm)] text-[var(--wsj-text-medium-gray)] font-sans">
-                      <div className="flex items-center gap-1">
-                        <MessageCircle className="w-3 h-3" />
-                        <span>0</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Clock className="w-3 h-3" />
-                        <span>{article.readTime} min read</span>
-                      </div>
-                      {article.publishedAt && (
-                        <span>{format(new Date(article.publishedAt), 'MMM d')}</span>
-                      )}
-                    </div>
-                  </Link>
-                  {index < leftColumnArticles.length - 1 && (
-                    <div className="mt-6 pt-6 border-t border-[var(--wsj-border-light)]" />
-                  )}
-                </article>
-                )
-              })}
-            </div>
-
-            {/* Center Column - Large Featured Image */}
-            <div className="lg:col-span-5">
-              {centerArticle && (() => {
-                const centerArticleUrl = getArticleUrl(centerArticle)
-                return (
-                  <div className="group mb-8" key={centerArticle.id}>
-                    <Link href={centerArticleUrl} className="block">
-                    {(() => {
-                      const centerImageUrl = centerArticle.featuredImageMediaId
-                        ? `${baseUrl}/api/media/${centerArticle.featuredImageMediaId}`
-                        : centerArticle.featuredImage || null
-                      return centerImageUrl ? (
-                        <div className="relative w-full aspect-[16/10] md:aspect-[16/9] overflow-hidden mb-4">
-                          <Image
-                            src={centerImageUrl}
-                            alt={centerArticle.featuredImageAltText || centerArticle.title}
-                            fill
-                            priority
-                            className="object-cover"
-                            sizes="(max-width: 1024px) 100vw, 42vw"
-                          />
-                        </div>
-                      ) : null
-                    })()}
-                    <h2 className="font-serif font-bold text-[28px] md:text-[32px] lg:text-[36px] leading-[var(--wsj-line-height-normal)] mb-3 text-[var(--wsj-text-black)] group-hover:underline">
-                      {centerArticle.title}
-                    </h2>
-                    {centerArticle.excerpt && (
-                      <p className="text-[var(--wsj-font-size-md)] text-[var(--wsj-text-dark-gray)] mb-3 font-serif leading-[var(--wsj-line-height-loose)]">
-                        {centerArticle.excerpt}
-                      </p>
-                    )}
-                  </Link>
-                  <div className="flex items-center gap-4 text-[var(--wsj-font-size-sm)] text-[var(--wsj-text-medium-gray)] font-sans">
-                    <div className="flex items-center gap-1">
-                      <MessageCircle className="w-3 h-3" />
-                      <span>0</span>
-                    </div>
-                    <span className="font-serif italic">Long read</span>
-                    {centerArticle.publishedAt && (
-                      <span>{format(new Date(centerArticle.publishedAt), 'MMM d, yyyy')}</span>
-                    )}
-                  </div>
-                  </div>
-                )
-              })()}
-
-              {/* Bottom Center Articles */}
-              {bottomCenterArticles.length > 0 && (
-                <div className="space-y-6 mt-8">
-                  {bottomCenterArticles.map((article, index) => {
-                    const articleUrl = getArticleUrl(article)
-                    return (
+          <div className="wsj-container py-6 md:py-8">
+            {/* Four Column Layout */}
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 lg:gap-8 mb-12">
+              {/* Left Column - Latest Articles (1 column) */}
+              <div className="space-y-6">
+                <h2 className="font-serif font-bold text-[var(--wsj-font-size-xl)] mb-4 text-[var(--wsj-text-black)]">Latest</h2>
+                {displayLatestArticles.slice(0, 8).map((article, index) => {
+                  const articleUrl = getArticleUrl(article)
+                  return (
                     <article key={article.id} className="group">
                       <Link href={articleUrl} className="block">
-                        <div className="flex gap-4">
-                          {(() => {
-                            const articleImageUrl = article.featuredImageMediaId
-                              ? `${baseUrl}/api/media/${article.featuredImageMediaId}`
-                              : article.featuredImage || null
-                            return articleImageUrl ? (
-                              <div className="relative w-32 h-24 flex-shrink-0 overflow-hidden">
-                                <Image
-                                  src={articleImageUrl}
-                                  alt={article.featuredImageAltText || article.title}
-                                  fill
-                                  className="object-cover"
-                                  sizes="128px"
-                                />
-                              </div>
-                            ) : null
-                          })()}
-                          <div className="flex-1">
-                            <h3 className="font-serif font-bold text-[var(--wsj-font-size-base)] leading-[var(--wsj-line-height-relaxed)] text-[var(--wsj-text-black)] group-hover:underline mb-1">
-                              {article.title}
-                            </h3>
-                            <div className="text-[var(--wsj-font-size-sm)] text-[var(--wsj-text-medium-gray)] font-sans">
-                              {article.readTime} min read
-                            </div>
-                          </div>
+                        <h3 className="font-serif font-bold text-[18px] leading-[var(--wsj-line-height-relaxed)] text-[var(--wsj-text-black)] group-hover:underline mb-2">
+                          {article.title}
+                        </h3>
+                        <div className="text-[var(--wsj-font-size-xs)] text-[var(--wsj-text-medium-gray)] font-sans">
+                          {article.category.name}
                         </div>
                       </Link>
-                      {index < bottomCenterArticles.length - 1 && (
-                        <div className="mt-6 pt-6 border-t border-[var(--wsj-border-light)]" />
+                      {index < displayLatestArticles.slice(0, 8).length - 1 && (
+                        <div className="mt-6 wsj-article-separator" />
                       )}
                     </article>
+                  )
+                })}
+              </div>
+
+              {/* Middle Column - Featured Article (2 columns) */}
+              {mainFeaturedArticle && (
+                <div className="lg:col-span-2">
+                  <div className="group mb-8" key={mainFeaturedArticle.id}>
+                    <Link href={getArticleUrl(mainFeaturedArticle)} className="block">
+                      {(() => {
+                        const featuredImageUrl = mainFeaturedArticle.featuredImageMediaId
+                          ? `${baseUrl}/api/media/${mainFeaturedArticle.featuredImageMediaId}`
+                          : mainFeaturedArticle.featuredImage || null
+                        return featuredImageUrl ? (
+                          <div className="relative w-full aspect-[16/10] overflow-hidden mb-4">
+                            <Image
+                              src={featuredImageUrl}
+                              alt={mainFeaturedArticle.featuredImageAltText || mainFeaturedArticle.title}
+                              fill
+                              priority
+                              className="object-cover"
+                              sizes="(max-width: 1024px) 100vw, 50vw"
+                            />
+                          </div>
+                        ) : null
+                      })()}
+                      <h1 className="font-serif font-bold text-[42px] md:text-[48px] leading-[var(--wsj-line-height-tight)] mb-3 text-[var(--wsj-text-black)] group-hover:underline">
+                        {mainFeaturedArticle.title}
+                      </h1>
+                      {mainFeaturedArticle.excerpt && (
+                        <p className="text-[20px] text-[var(--wsj-text-dark-gray)] mb-3 font-serif leading-[var(--wsj-line-height-loose)]">
+                          {mainFeaturedArticle.excerpt}
+                        </p>
+                      )}
+                    </Link>
+                    <div className="flex items-center gap-4 text-[var(--wsj-font-size-sm)] text-[var(--wsj-text-medium-gray)] font-sans">
+                      <span>{mainFeaturedArticle.category.name}</span>
+                      <span>•</span>
+                      <span>{mainFeaturedArticle.editor.name}</span>
+                    </div>
+                  </div>
+
+                  {/* Sub-Featured Articles (2 articles, 1 column each) */}
+                  {subFeaturedArticles.length > 0 && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-8 pt-8 border-t border-[var(--wsj-border-light)]">
+                      {subFeaturedArticles.map((article, index) => {
+                        const articleUrl = getArticleUrl(article)
+                        const articleImageUrl = article.featuredImageMediaId
+                          ? `${baseUrl}/api/media/${article.featuredImageMediaId}`
+                          : article.featuredImage || null
+                        return (
+                          <article key={article.id} className="group">
+                            <Link href={articleUrl} className="block">
+                              {articleImageUrl && (
+                                <div className="relative w-full aspect-[16/10] overflow-hidden mb-3">
+                                  <Image
+                                    src={articleImageUrl}
+                                    alt={article.featuredImageAltText || article.title}
+                                    fill
+                                    className="object-cover"
+                                    sizes="(max-width: 768px) 100vw, 25vw"
+                                  />
+                                </div>
+                              )}
+                              <h3 className="font-serif font-bold text-[22px] leading-[var(--wsj-line-height-relaxed)] text-[var(--wsj-text-black)] group-hover:underline mb-2">
+                                {article.title}
+                              </h3>
+                              {article.excerpt && (
+                                <p className="text-[var(--wsj-font-size-sm)] text-[var(--wsj-text-dark-gray)] line-clamp-2 font-serif mb-2">
+                                  {article.excerpt}
+                                </p>
+                              )}
+                              <div className="text-[var(--wsj-font-size-xs)] text-[var(--wsj-text-medium-gray)] font-sans">
+                                {article.category.name}
+                              </div>
+                            </Link>
+                          </article>
+                        )
+                      })}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Right Column - Most Popular + Advertisement (1 column) */}
+              <div className="space-y-8">
+                {/* Most Popular Section */}
+                {popularArticles.length > 0 && (
+                  <div>
+                    <h2 className="font-serif font-bold text-[var(--wsj-font-size-xl)] mb-5 text-[var(--wsj-text-black)] pb-3 border-b border-[var(--wsj-border-light)]">Most Popular</h2>
+                    <div className="space-y-5">
+                      {popularArticles.map((article, idx) => {
+                        const articleUrl = getArticleUrl(article)
+                        const articleImageUrl = article.featuredImageMediaId
+                          ? `${baseUrl}/api/media/${article.featuredImageMediaId}`
+                          : article.featuredImage || null
+                        return (
+                          <article key={article.id} className="group">
+                            <div className="flex gap-3 items-start">
+                              {articleImageUrl && (
+                                <Link href={articleUrl} className="flex-shrink-0">
+                                  <div className="relative w-20 h-20 overflow-hidden">
+                                    <Image
+                                      src={articleImageUrl}
+                                      alt={article.title}
+                                      fill
+                                      loading="lazy"
+                                      className="object-cover"
+                                      sizes="80px"
+                                    />
+                                  </div>
+                                </Link>
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <Link href={articleUrl}>
+                                  <h4 className="font-serif font-bold text-[var(--wsj-font-size-sm)] leading-[var(--wsj-line-height-relaxed)] text-[var(--wsj-text-black)] group-hover:underline mb-1 line-clamp-3">
+                                    {article.title}
+                                  </h4>
+                                </Link>
+                                <div className="text-[var(--wsj-font-size-xs)] text-[var(--wsj-text-medium-gray)] font-sans">
+                                  By <Link href={`/editor/${article.editor.slug}`} className="hover:underline">{article.editor.name}</Link>
+                                </div>
+                              </div>
+                            </div>
+                            {idx < popularArticles.length - 1 && (
+                              <div className="mt-5 wsj-article-separator" />
+                            )}
+                          </article>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* Side Banner - Vertical */}
+                <div className="pt-6 border-t border-[var(--wsj-border-light)]">
+                  <AdBannerFetcher type="homepage-side" />
+                </div>
+              </div>
+            </div>
+
+            {/* Exclusive Stories Section (2 columns in middle) */}
+            {exclusiveArticles.length > 0 && (
+              <div className="mb-12 py-8 border-t border-[var(--wsj-border-light)]">
+                <h2 className="font-serif font-bold text-[var(--wsj-font-size-3xl)] mb-6 text-[var(--wsj-text-black)]">Exclusive Stories</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {exclusiveArticles.map((article, index) => {
+                    const articleUrl = getArticleUrl(article)
+                    const articleImageUrl = article.featuredImageMediaId
+                      ? `${baseUrl}/api/media/${article.featuredImageMediaId}`
+                      : article.featuredImage || null
+                    return (
+                      <article key={article.id} className="group">
+                        <Link href={articleUrl} className="block">
+                          {articleImageUrl && (
+                            <div className="relative w-full aspect-[16/10] overflow-hidden mb-3">
+                              <Image
+                                src={articleImageUrl}
+                                alt={article.featuredImageAltText || article.title}
+                                fill
+                                loading="lazy"
+                                className="object-cover"
+                                sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                              />
+                            </div>
+                          )}
+                          <h3 className="font-serif font-bold text-[var(--wsj-font-size-base)] leading-[var(--wsj-line-height-relaxed)] text-[var(--wsj-text-black)] group-hover:underline mb-2">
+                            {article.title}
+                          </h3>
+                          {article.excerpt && (
+                            <p className="text-[var(--wsj-font-size-sm)] text-[var(--wsj-text-dark-gray)] line-clamp-2 font-serif mb-2">
+                              {article.excerpt}
+                            </p>
+                          )}
+                          <div className="text-[var(--wsj-font-size-xs)] text-[var(--wsj-text-medium-gray)] font-sans">
+                            {article.category.name}
+                          </div>
+                        </Link>
+                      </article>
                     )
                   })}
                 </div>
-              )}
-            </div>
-
-            {/* Right Column - Trending Section */}
-            <div className="lg:col-span-3 border-t lg:border-t-0 lg:border-l border-[var(--wsj-border-light)] pt-6 lg:pt-0 lg:pl-8">
-              {/* Side Banner - Vertical */}
-              <div className="mb-8">
-                <AdBannerFetcher type="homepage-side" />
               </div>
+            )}
 
-              {/* Trending Section */}
-              {trendingArticles.length > 0 && (
-                <div className="mb-8">
-                  <h3 className="font-serif font-bold text-[var(--wsj-font-size-2xl)] mb-6 text-[var(--wsj-text-black)]">Trending</h3>
-                  <div className="space-y-6">
-                    {trendingArticles.map((article, idx) => {
-                      const articleUrl = getArticleUrl(article)
-                      const articleImageUrl = article.featuredImageMediaId
-                        ? `${baseUrl}/api/media/${article.featuredImageMediaId}`
-                        : article.featuredImage || null
-                      return (
-                      <article key={article.id} className="group">
-                        <div className="flex gap-3 items-start">
-                          <Link href={articleUrl} className="flex-shrink-0">
-                            {articleImageUrl ? (
-                              <div className="relative w-24 h-24 overflow-hidden">
-                                <Image
-                                  src={articleImageUrl}
-                                  alt={article.title}
-                                  fill
-                                  loading="lazy"
-                                  className="object-cover"
-                                  sizes="96px"
-                                />
-                              </div>
-                            ) : (
-                              <div className="w-24 h-24 bg-[var(--wsj-bg-light-gray)]" />
-                            )}
+            {/* Categories Section */}
+            {categories.length > 0 && (
+              <div className="mb-12 py-8 border-t border-[var(--wsj-border-light)]">
+                <div className="space-y-10">
+                  {categories.map((category) => {
+                    const categoryArticles = displayLatestArticles
+                      .filter(a => a.category?.id === category.id)
+                      .slice(0, 6)
+
+                    if (categoryArticles.length === 0) return null
+
+                    return (
+                      <div key={category.id} className="border-t border-[var(--wsj-border-light)] pt-6">
+                        <div className="flex items-center justify-between mb-4">
+                          <Link href={`/category/${category.slug}`}>
+                            <h3 className="font-serif font-bold text-[var(--wsj-font-size-2xl)] text-[var(--wsj-text-black)] hover:underline">
+                              {category.name}
+                            </h3>
                           </Link>
-                          <div className="flex-1 min-w-0">
-                            <Link href={articleUrl}>
-                              <h4 className="font-serif font-bold text-[var(--wsj-font-size-sm)] leading-[var(--wsj-line-height-relaxed)] text-[var(--wsj-text-black)] group-hover:underline mb-1 line-clamp-2">
-                                {article.title}
-                              </h4>
-                            </Link>
-                            <div className="text-[var(--wsj-font-size-xs)] text-[var(--wsj-text-medium-gray)] font-sans">
-                              By <Link href={`/editor/${article.editor.slug}`} className="hover:underline">{article.editor.name}</Link>
-                            </div>
-                          </div>
+                          <Link 
+                            href={`/category/${category.slug}`}
+                            className="text-[var(--wsj-font-size-sm)] text-[var(--wsj-blue-primary)] hover:underline font-sans"
+                          >
+                            View All →
+                          </Link>
                         </div>
-                        {idx < trendingArticles.length - 1 && (
-                          <div className="mt-6 pt-6 border-t border-[var(--wsj-border-light)]" />
-                        )}
-                      </article>
-                      )
-                    })}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Horizontal Scrolling Categories Section */}
-          {categories.length > 0 && (
-            <div className="mt-12">
-              <h2 className="font-serif font-bold text-[var(--wsj-font-size-3xl)] mb-6 text-[var(--wsj-text-black)]">Explore by Category</h2>
-              <div className="space-y-8">
-                {categories.map((category) => {
-                  const categoryArticles = articlesWithoutCenter
-                    .filter(a => a.category?.id === category.id)
-                    .slice(0, 10)
-
-                  if (categoryArticles.length === 0) return null
-
-                  return (
-                    <div key={category.id} className="border-t border-[var(--wsj-border-light)] pt-6">
-                      <div className="flex items-center justify-between mb-4">
-                        <Link href={`/category/${category.slug}`}>
-                          <h3 className="font-serif font-bold text-[var(--wsj-font-size-2xl)] text-[var(--wsj-text-black)] hover:underline">
-                            {category.name}
-                          </h3>
-                        </Link>
-                        <Link 
-                          href={`/category/${category.slug}`}
-                          className="text-[var(--wsj-font-size-sm)] text-[var(--wsj-blue-primary)] hover:underline font-sans"
-                        >
-                          View All →
-                        </Link>
-                      </div>
-                      <div className="overflow-x-auto">
-                        <div className="flex gap-4 pb-4" style={{ scrollbarWidth: 'thin' }}>
-                          {categoryArticles.map((article) => {
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                          {categoryArticles.map((article, idx) => {
                             const articleUrl = getArticleUrl(article)
+                            const showImage = idx === 0 // Only first article has image
+                            const articleImageUrl = showImage && article.featuredImageMediaId
+                              ? `${baseUrl}/api/media/${article.featuredImageMediaId}`
+                              : showImage && article.featuredImage || null
+
                             return (
-                            <div key={article.id} className="flex-shrink-0 w-[280px] group">
-                              <Link href={articleUrl} className="block">
-                                {(() => {
-                                  const articleImageUrl = article.featuredImageMediaId
-                                    ? `${baseUrl}/api/media/${article.featuredImageMediaId}`
-                                    : article.featuredImage || null
-                                  return articleImageUrl ? (
-                                    <div className="relative w-full h-[180px] overflow-hidden mb-3">
+                              <article key={article.id} className="group">
+                                <Link href={articleUrl} className="block">
+                                  {showImage && articleImageUrl && (
+                                    <div className="relative w-full aspect-[16/10] overflow-hidden mb-3">
                                       <Image
                                         src={articleImageUrl}
                                         alt={article.title}
                                         fill
                                         loading="lazy"
                                         className="object-cover"
-                                        sizes="280px"
+                                        sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
                                       />
                                     </div>
-                                  ) : null
-                                })()}
-                                <h4 className="font-serif font-bold text-[var(--wsj-font-size-base)] leading-[var(--wsj-line-height-relaxed)] text-[var(--wsj-text-black)] group-hover:underline mb-2">
-                                  {article.title}
-                                </h4>
-                                {article.excerpt && (
-                                  <p className="text-[var(--wsj-font-size-sm)] text-[var(--wsj-text-dark-gray)] line-clamp-2 font-serif mb-2">
-                                    {article.excerpt}
-                                  </p>
-                                )}
-                                <div className="text-[var(--wsj-font-size-xs)] text-[var(--wsj-text-medium-gray)] font-sans">
-                                  {article.readTime} min read
-                                </div>
-                              </Link>
-                            </div>
+                                  )}
+                                  <h4 className="font-serif font-bold text-[var(--wsj-font-size-base)] leading-[var(--wsj-line-height-relaxed)] text-[var(--wsj-text-black)] group-hover:underline mb-2">
+                                    {article.title}
+                                  </h4>
+                                  {showImage && article.excerpt && (
+                                    <p className="text-[var(--wsj-font-size-sm)] text-[var(--wsj-text-dark-gray)] line-clamp-2 font-serif mb-2">
+                                      {article.excerpt}
+                                    </p>
+                                  )}
+                                  <div className="text-[var(--wsj-font-size-xs)] text-[var(--wsj-text-medium-gray)] font-sans">
+                                    {article.readTime} min read
+                                  </div>
+                                </Link>
+                              </article>
                             )
                           })}
                         </div>
                       </div>
-                    </div>
-                  )
-                })}
+                    )
+                  })}
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
-      </div>
       </>
     )
   } catch (error) {

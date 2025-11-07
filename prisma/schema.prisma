@@ -31,6 +31,10 @@ model Editor {
   slug      String    @unique
   bio       String?
   avatar    String?
+  image     String?   // Profile image URL (can be different from avatar)
+  title     String?   // Job title (e.g., "Reporter, AI MEDIA HOUSE")
+  twitter   String?   // Twitter/X handle or URL
+  linkedin  String?   // LinkedIn profile URL
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   articles  Article[]
@@ -60,7 +64,9 @@ model Article {
   readTime                 Int          @default(5) // in minutes
   metaTitle                String?
   metaDescription          String?
-  featured                 Boolean      @default(false)
+  featured                 Boolean      @default(false) // Main featured article for homepage
+  subFeatured              Boolean      @default(false) // Sub-featured articles (2 below main featured)
+  exclusive                Boolean      @default(false) // Exclusive stories section
   categoryId                String
   category                 Category     @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   editorId                 String
@@ -132,6 +138,19 @@ model Settings {
   headerBarLeftLink  String? // Left side link URL in header bar
   headerBarRightText String? // Right side text in header bar
   headerBarRightLink String? // Right side link URL in header bar
+  
+  // Design System Settings - Colors
+  designSystemColorsJson String? // JSON string containing all color settings
+  
+  // Design System Settings - Typography
+  designSystemTypographyJson String? // JSON string containing all typography settings
+  
+  // Design System Settings - Spacing
+  designSystemSpacingJson String? // JSON string containing all spacing settings
+  
+  // Design System Settings - Layout
+  designSystemLayoutJson String? // JSON string containing all layout settings
+  
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 

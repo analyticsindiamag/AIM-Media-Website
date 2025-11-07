@@ -9,12 +9,16 @@ import {
   Italic,
   List,
   ListOrdered,
+  Heading1,
   Heading2,
+  Heading3,
   Quote,
   Undo,
   Redo,
   Link as LinkIcon,
   ImageIcon,
+  Code,
+  Strikethrough,
 } from 'lucide-react'
 
 interface RichTextEditorProps {
@@ -79,7 +83,7 @@ export function RichTextEditor({ content, onChange }: RichTextEditorProps) {
           className={`p-2 rounded hover:bg-gray-200 transition-colors ${
             editor.isActive('bold') ? 'bg-gray-300' : ''
           }`}
-          title="Bold"
+          title="Bold (Ctrl+B)"
         >
           <Bold className="w-4 h-4" />
         </button>
@@ -89,9 +93,32 @@ export function RichTextEditor({ content, onChange }: RichTextEditorProps) {
           className={`p-2 rounded hover:bg-gray-200 transition-colors ${
             editor.isActive('italic') ? 'bg-gray-300' : ''
           }`}
-          title="Italic"
+          title="Italic (Ctrl+I)"
         >
           <Italic className="w-4 h-4" />
+        </button>
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().toggleStrike().run()}
+          className={`p-2 rounded hover:bg-gray-200 transition-colors ${
+            editor.isActive('strike') ? 'bg-gray-300' : ''
+          }`}
+          title="Strikethrough"
+        >
+          <Strikethrough className="w-4 h-4" />
+        </button>
+        <div className="w-px h-8 bg-gray-300 mx-1" />
+        <button
+          type="button"
+          onClick={() =>
+            editor.chain().focus().toggleHeading({ level: 1 }).run()
+          }
+          className={`p-2 rounded hover:bg-gray-200 transition-colors ${
+            editor.isActive('heading', { level: 1 }) ? 'bg-gray-300' : ''
+          }`}
+          title="Heading 1"
+        >
+          <Heading1 className="w-4 h-4" />
         </button>
         <button
           type="button"
@@ -104,6 +131,18 @@ export function RichTextEditor({ content, onChange }: RichTextEditorProps) {
           title="Heading 2"
         >
           <Heading2 className="w-4 h-4" />
+        </button>
+        <button
+          type="button"
+          onClick={() =>
+            editor.chain().focus().toggleHeading({ level: 3 }).run()
+          }
+          className={`p-2 rounded hover:bg-gray-200 transition-colors ${
+            editor.isActive('heading', { level: 3 }) ? 'bg-gray-300' : ''
+          }`}
+          title="Heading 3"
+        >
+          <Heading3 className="w-4 h-4" />
         </button>
         <button
           type="button"
@@ -134,6 +173,16 @@ export function RichTextEditor({ content, onChange }: RichTextEditorProps) {
           title="Quote"
         >
           <Quote className="w-4 h-4" />
+        </button>
+        <button
+          type="button"
+          onClick={() => editor.chain().focus().toggleCode().run()}
+          className={`p-2 rounded hover:bg-gray-200 transition-colors ${
+            editor.isActive('code') ? 'bg-gray-300' : ''
+          }`}
+          title="Inline Code"
+        >
+          <Code className="w-4 h-4" />
         </button>
         <div className="w-px h-8 bg-gray-300 mx-1" />
         <button

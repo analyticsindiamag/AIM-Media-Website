@@ -37,6 +37,8 @@ export async function POST(request: NextRequest) {
       metaTitle,
       metaDescription,
       featured,
+      subFeatured,
+      exclusive,
     } = body
 
     if (!title || !slug || !content || !categoryId || !editorId) {
@@ -97,6 +99,8 @@ export async function POST(request: NextRequest) {
         metaTitle,
         metaDescription,
         featured: !!featured,
+        subFeatured: !!subFeatured,
+        exclusive: !!exclusive,
       },
       include: {
         category: true,

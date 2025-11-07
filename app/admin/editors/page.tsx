@@ -13,6 +13,10 @@ interface Editor {
   email: string
   bio: string | null
   avatar: string | null
+  image: string | null
+  title: string | null
+  twitter: string | null
+  linkedin: string | null
 }
 
 export default function EditorsPage() {
@@ -24,6 +28,10 @@ export default function EditorsPage() {
     email: '',
     bio: '',
     avatar: '',
+    image: '',
+    title: '',
+    twitter: '',
+    linkedin: '',
   })
 
   useEffect(() => {
@@ -51,7 +59,7 @@ export default function EditorsPage() {
       })
 
       if (response.ok) {
-        setFormData({ name: '', email: '', bio: '', avatar: '' })
+        setFormData({ name: '', email: '', bio: '', avatar: '', image: '', title: '', twitter: '', linkedin: '' })
         setEditingId(null)
         fetchEditors()
       } else {
@@ -71,12 +79,16 @@ export default function EditorsPage() {
       email: editor.email,
       bio: editor.bio || '',
       avatar: editor.avatar || '',
+      image: editor.image || '',
+      title: editor.title || '',
+      twitter: editor.twitter || '',
+      linkedin: editor.linkedin || '',
     })
     setEditingId(editor.id)
   }
 
   const handleCancel = () => {
-    setFormData({ name: '', email: '', bio: '', avatar: '' })
+    setFormData({ name: '', email: '', bio: '', avatar: '', image: '', title: '', twitter: '', linkedin: '' })
     setEditingId(null)
   }
 
@@ -119,6 +131,18 @@ export default function EditorsPage() {
             </div>
 
             <div>
+              <Label htmlFor="title">Job Title</Label>
+              <Input
+                id="title"
+                value={formData.title}
+                onChange={(e) =>
+                  setFormData({ ...formData, title: e.target.value })
+                }
+                placeholder="Reporter, AIM MEDIA HOUSE"
+              />
+            </div>
+
+            <div>
               <Label htmlFor="bio">Bio</Label>
               <Textarea
                 id="bio"
@@ -127,14 +151,39 @@ export default function EditorsPage() {
                   setFormData({ ...formData, bio: e.target.value })
                 }
                 placeholder="Brief bio about the editor..."
-                rows={3}
+                rows={4}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="twitter">Twitter/X Handle or URL</Label>
+              <Input
+                id="twitter"
+                value={formData.twitter}
+                onChange={(e) =>
+                  setFormData({ ...formData, twitter: e.target.value })
+                }
+                placeholder="@username or https://twitter.com/username"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="linkedin">LinkedIn Profile URL</Label>
+              <Input
+                id="linkedin"
+                value={formData.linkedin}
+                onChange={(e) =>
+                  setFormData({ ...formData, linkedin: e.target.value })
+                }
+                placeholder="https://linkedin.com/in/username"
               />
             </div>
 
             <ImageUpload
-              label="Avatar"
+              label="Avatar/Profile Image"
               value={formData.avatar}
               onChange={(url) => setFormData({ ...formData, avatar: url })}
+              helpText="Circular profile image displayed on editor page"
             />
 
             <div className="flex gap-2">
@@ -160,14 +209,31 @@ export default function EditorsPage() {
                   key={editor.id}
                   className="border border-border rounded-lg p-4"
                 >
-                  <h3 className="font-bold">{editor.name}</h3>
-                  <p className="text-sm text-muted-foreground">{editor.email}</p>
-                  {editor.bio && (
-                    <p className="text-sm mt-2">{editor.bio}</p>
-                  )}
-                  {editor.avatar && (
-                    <img src={editor.avatar} alt={editor.name} className="w-16 h-16 rounded-full mt-2 object-cover" />
-                  )}
+                  <div className="flex items-start gap-3">
+                    {(editor.image || editor.avatar) && (
+                      <img 
+                        src={editor.image || editor.avatar || ''} 
+                        alt={editor.name} 
+                        className="w-16 h-16 rounded-full object-cover flex-shrink-0" 
+                      />
+                    )}
+                    <div className="flex-1">
+                      <h3 className="font-bold">{editor.name}</h3>
+                      {editor.title && (
+                        <p className="text-sm text-muted-foreground mb-1">{editor.title}</p>
+                      )}
+                      <p className="text-sm text-muted-foreground">{editor.email}</p>
+                      {editor.bio && (
+                        <p className="text-sm mt-2 line-clamp-2">{editor.bio}</p>
+                      )}
+                      {(editor.twitter || editor.linkedin) && (
+                        <div className="text-xs text-muted-foreground mt-2">
+                          {editor.twitter && <span className="mr-3">Twitter: {editor.twitter}</span>}
+                          {editor.linkedin && <span>LinkedIn ✓</span>}
+                        </div>
+                      )}
+                    </div>
+                  </div>
                   <div className="mt-3 flex gap-3">
                     <button
                       className="text-blue-600 text-sm hover:underline"

@@ -59,6 +59,8 @@ export async function PUT(
       metaTitle,
       metaDescription,
       featured,
+      subFeatured,
+      exclusive,
     } = body
 
     // Validate required fields
@@ -158,6 +160,8 @@ export async function PUT(
         metaTitle,
         metaDescription,
         featured: !!featured,
+        subFeatured: !!subFeatured,
+        exclusive: !!exclusive,
       },
       include: {
         category: true,

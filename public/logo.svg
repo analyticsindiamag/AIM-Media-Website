@@ -1,0 +1,11 @@
+<svg width="400" height="200" viewBox="0 0 400 200" xmlns="http://www.w3.org/2000/svg">
+  <!-- Logo based on the attached image -->
+  <rect width="400" height="200" fill="white"/>
+  <!-- Left side -->
+  <rect x="88" y="82" width="178" height="98" fill="black"/>
+  <rect x="198" y="82" width="68" height="68" fill="white"/>
+  <!-- Right side -->
+  <rect x="612" y="82" width="178" height="98" fill="black" transform="translate(312, 0)"/>
+  <rect x="800" y="82" width="68" height="98" fill="black" transform="translate(-12, 0)"/>
+  <rect x="968" y="82" width="178" height="98" fill="black" transform="translate(-276, 0)"/>
+</svg>

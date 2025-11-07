@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, EB_Garamond } from "next/font/google";
+import { Old_Standard_TT, Merriweather } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/header";
 import { Footer } from "@/components/footer";
@@ -7,17 +7,22 @@ import MixpanelProvider from "./mixpanel-provider";
 import { AuthSessionProvider } from "@/components/session-provider";
 import { Suspense } from "react";
 import { prisma } from "@/lib/prisma";
+import { parseDesignSystem, generateCSSVariables } from "@/lib/design-system";
 
-const inter = Inter({
-  variable: "--font-sans",
+// Display font for headings - Old Standard TT (serif)
+const oldStandardTT = Old_Standard_TT({
+  variable: "--font-serif",
   subsets: ["latin"],
+  weight: ["400", "700"],
   display: "swap",
 });
 
-const garamond = EB_Garamond({
-  variable: "--font-serif",
+// Body font for text - Merriweather (serif per reference spec)
+const merriweather = Merriweather({
+  variable: "--font-sans",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["300", "400", "700"],
+  style: ["normal", "italic"],
   display: "swap",
 });
 
@@ -67,6 +72,17 @@ export default async function RootLayout({
   const siteName = settings?.siteName || "AI Tech News";
   const logoUrl = settings?.logoUrl || `${baseUrl}/logo.png`;
 
+  // Parse design system from database
+  const designSystem = parseDesignSystem(
+    settings?.designSystemColorsJson,
+    settings?.designSystemTypographyJson,
+    settings?.designSystemSpacingJson,
+    settings?.designSystemLayoutJson
+  );
+
+  // Generate CSS variables
+  const cssVariables = generateCSSVariables(designSystem);
+
   // Organization and Website Schema
   const organizationSchema = {
     "@context": "https://schema.org",
@@ -104,6 +120,10 @@ export default async function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        {/* Dynamic CSS Variables from Design System */}
+        <style dangerouslySetInnerHTML={{
+          __html: `:root { ${cssVariables} }`,
+        }} />
         {/* Organization Schema */}
         <script
           type="application/ld+json"
@@ -120,7 +140,7 @@ export default async function RootLayout({
         />
       </head>
       <body
-        className={`${inter.variable} ${garamond.variable} antialiased`}
+        className={`${oldStandardTT.variable} ${merriweather.variable} antialiased`}
       >
         <Suspense fallback={null}>
           <AuthSessionProvider>

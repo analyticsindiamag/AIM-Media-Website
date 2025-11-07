@@ -8,7 +8,7 @@ export async function PUT(
   try {
     const { id } = await context.params
     const body = await request.json()
-    const { name, email, bio, avatar } = body
+    const { name, email, bio, avatar, image, title, twitter, linkedin } = body
 
     // Check if editor exists
     const existingEditor = await prisma.editor.findUnique({ where: { id } })
@@ -49,6 +49,10 @@ export async function PUT(
         ...(email && { email }),
         ...(bio !== undefined && { bio }),
         ...(avatar !== undefined && { avatar }),
+        ...(image !== undefined && { image }),
+        ...(title !== undefined && { title }),
+        ...(twitter !== undefined && { twitter }),
+        ...(linkedin !== undefined && { linkedin }),
         ...(slug !== existingEditor.slug && { slug }),
       },
     })

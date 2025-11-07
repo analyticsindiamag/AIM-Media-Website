@@ -47,6 +47,8 @@ export default function NewArticlePage() {
     metaTitle: '',
     metaDescription: '',
     featured: false,
+    subFeatured: false,
+    exclusive: false,
   })
 
   // Fetch categories and editors
@@ -280,7 +282,25 @@ export default function NewArticlePage() {
                 checked={formData.featured}
                 onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
               />
-              <Label htmlFor="featured">Set as Featured (hero)</Label>
+              <Label htmlFor="featured">Set as Featured (main homepage article)</Label>
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                id="subFeatured"
+                type="checkbox"
+                checked={formData.subFeatured}
+                onChange={(e) => setFormData({ ...formData, subFeatured: e.target.checked })}
+              />
+              <Label htmlFor="subFeatured">Set as Sub-Featured (below main featured)</Label>
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                id="exclusive"
+                type="checkbox"
+                checked={formData.exclusive}
+                onChange={(e) => setFormData({ ...formData, exclusive: e.target.checked })}
+              />
+              <Label htmlFor="exclusive">Mark as Exclusive Story</Label>
             </div>
           </div>
         </div>
