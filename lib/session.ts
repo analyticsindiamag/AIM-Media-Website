@@ -9,20 +9,14 @@ export const authOptions = {
 // Dynamic import helper to avoid build-time errors
 async function getAuthFunction() {
   try {
-    // Dynamic import to avoid build-time errors with next-auth v5
-    const nextAuth = await import('next-auth') as any
-    // Check for v5 auth function
-    if (typeof nextAuth.auth === 'function') {
-      return nextAuth.auth
-    }
-    // Fallback for v4 if needed
-    if (typeof nextAuth.getServerSession === 'function') {
-      return () => nextAuth.getServerSession({})
-    }
-  } catch {
-    // next-auth not available or incompatible version
+    // Import auth from auth.ts (NextAuth v5)
+    const { auth } = await import('@/auth')
+    return auth
+  } catch (error) {
+    // Auth not available or not configured
+    console.warn('Auth not available:', error)
+    return null
   }
-  return null
 }
 
 export async function getCurrentUser() {
@@ -52,6 +46,7 @@ export async function getCurrentUser() {
     return user
   } catch (error) {
     // During build or if auth is not configured, return null
+    console.warn('Error getting current user:', error)
     return null
   }
 }
@@ -64,6 +59,7 @@ export async function getSession() {
     }
     return await authFn()
   } catch (error) {
+    console.warn('Error getting session:', error)
     return null
   }
 }

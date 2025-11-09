@@ -6,6 +6,7 @@ import type { Metadata } from 'next'
 import { format } from 'date-fns'
 import { MessageCircle, Clock } from 'lucide-react'
 import { getArticleUrl } from '@/lib/article-url'
+import { AdBannerFetcher } from '@/components/ad-banner-fetcher'
 
 interface PageProps {
   params: Promise<{
@@ -71,7 +72,7 @@ export const revalidate = 0
 export default async function CategoryPage({ params }: PageProps) {
   const { slug } = await params
   
-  const [category, articles] = await Promise.all([
+  const [category, articles, popularArticles] = await Promise.all([
     prisma.category.findUnique({
       where: { slug },
     }),
@@ -84,6 +85,24 @@ export default async function CategoryPage({ params }: PageProps) {
       },
       orderBy: { publishedAt: 'desc' },
       take: 20,
+      include: {
+        category: true,
+        editor: true,
+        featuredImageMedia: {
+          select: { id: true },
+        },
+      },
+    }),
+    // Most popular articles in this category
+    prisma.article.findMany({
+      where: {
+        published: true,
+        category: {
+          slug,
+        },
+      },
+      orderBy: { views: 'desc' },
+      take: 5,
       include: {
         category: true,
         editor: true,
@@ -133,10 +152,13 @@ export default async function CategoryPage({ params }: PageProps) {
     },
   }
 
-  // Split articles: first one as hero, next 3 in top grid, rest below
+  // Split articles: first one as hero, rest in groups of 3
   const [heroArticle, ...restArticles] = articles
-  const gridArticles = restArticles.slice(0, 3)
-  const additionalArticles = restArticles.slice(3)
+  // Group remaining articles into rows of 3
+  const articleRows: (typeof articles)[] = []
+  for (let i = 0; i < restArticles.length; i += 3) {
+    articleRows.push(restArticles.slice(i, i + 3))
+  }
 
   return (
     <>
@@ -148,73 +170,75 @@ export default async function CategoryPage({ params }: PageProps) {
         }}
       />
       <div className="bg-white min-h-screen">
-        <div className="wsj-container py-8 md:py-12">
-          {/* Category Header - WSJ Style */}
-          <div className="mb-8 pb-6 border-b border-[var(--wsj-border-light)]">
-            <h1 className="font-serif font-bold text-[42px] leading-[var(--wsj-line-height-tight)] text-[var(--wsj-text-black)]">
+        {/* Advertisement Banner after navbar */}
+        <div className="border-b border-[var(--wsj-border-light)]">
+          <AdBannerFetcher type="article-top" />
+        </div>
+
+        <div className="py-6 md:py-8">
+          <div className="max-w-[1400px] mx-auto px-6 md:px-8 lg:px-12">
+            {/* Big Heading */}
+            <h1 className="font-serif font-bold text-[48px] md:text-[56px] leading-[1.1] text-[var(--wsj-text-black)] mb-8">
               {category.name}
             </h1>
-          </div>
 
-          {articles.length === 0 ? (
-            <div className="text-center py-20">
-              <p className="text-[var(--wsj-text-medium-gray)] text-lg font-sans">
-                No articles found in this category yet.
-              </p>
-            </div>
-          ) : (
-            <>
-              {/* Hero Featured Article */}
-              {heroArticle && (
-                <article className="group mb-12 pb-12 border-b border-[var(--wsj-border-light)]">
-                  <div className="flex flex-col md:flex-row gap-6 md:gap-8">
-                    {/* Hero Image - Left Side */}
-                    {(() => {
-                      const heroUrl = getArticleUrl(heroArticle)
-                      const heroImageUrl = heroArticle.featuredImageMediaId
-                        ? `${baseUrl}/api/media/${heroArticle.featuredImageMediaId}`
-                        : heroArticle.featuredImage || null
-                      return (
-                        <>
+            {articles.length === 0 ? (
+              <div className="text-center py-20">
+                <p className="text-[var(--wsj-text-medium-gray)] text-lg font-sans">
+                  No articles found in this category yet.
+                </p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 lg:grid-cols-[70%_30%] gap-6 lg:gap-8">
+                {/* First Column - 70% - Articles */}
+                <div className="space-y-8">
+                  {/* First Story - Big Image with Text on Side */}
+                  {heroArticle && (() => {
+                    const heroUrl = getArticleUrl(heroArticle)
+                    const heroImageUrl = heroArticle.featuredImageMediaId
+                      ? `${baseUrl}/api/media/${heroArticle.featuredImageMediaId}`
+                      : heroArticle.featuredImage || null
+                    return (
+                      <article className="group w-full">
+                        <div className="flex flex-col md:flex-row gap-6">
+                          {/* Big Image */}
                           {heroImageUrl && (
-                            <Link href={heroUrl} className="block relative w-full md:w-[55%] h-[300px] md:h-[400px] flex-shrink-0 overflow-hidden">
+                            <Link href={heroUrl} className="block relative w-full md:w-[45%] h-[300px] md:h-[350px] flex-shrink-0 overflow-hidden">
                               <Image
                                 src={heroImageUrl}
                                 alt={heroArticle.featuredImageAltText || heroArticle.title}
                                 fill
                                 priority
                                 className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-                                sizes="(max-width: 768px) 100vw, 55vw"
+                                sizes="(max-width: 768px) 100vw, 45vw"
                               />
                             </Link>
                           )}
                           
-                          {/* Hero Content - Right Side */}
+                          {/* Text Content */}
                           <div className="flex-1 flex flex-col justify-center">
-                            {/* Badge if featured */}
-                            {heroArticle.featured && (
-                              <div className="inline-block mb-3">
-                                <span className="text-[11px] font-sans font-bold uppercase tracking-wider px-2 py-1 border border-[var(--wsj-text-black)] text-[var(--wsj-text-black)]">
-                                  Featured
-                                </span>
-                              </div>
-                            )}
+                            {/* Category */}
+                            <div className="mb-2">
+                              <span className="text-[11px] font-sans font-bold uppercase tracking-wider text-[var(--wsj-blue-primary)]">
+                                {heroArticle.category.name}
+                              </span>
+                            </div>
                             
                             {/* Title */}
                             <Link href={heroUrl}>
-                              <h2 className="font-serif font-bold text-[32px] md:text-[40px] leading-[var(--wsj-line-height-tight)] text-[var(--wsj-text-black)] group-hover:underline mb-4">
+                              <h2 className="font-serif font-bold text-[28px] md:text-[32px] leading-[1.2] text-[var(--wsj-text-black)] group-hover:underline mb-3">
                                 {heroArticle.title}
                               </h2>
                             </Link>
                             
                             {/* Excerpt */}
                             {heroArticle.excerpt && (
-                              <p className="text-[17px] text-[var(--wsj-text-dark-gray)] mb-4 font-serif leading-[var(--wsj-line-height-loose)]">
+                              <p className="text-[16px] text-[var(--wsj-text-dark-gray)] mb-4 font-sans leading-[1.5] line-clamp-3">
                                 {heroArticle.excerpt}
                               </p>
                             )}
                             
-                            {/* Author and Metadata */}
+                            {/* Author and Date */}
                             <div className="flex flex-wrap items-center gap-2 text-[13px] text-[var(--wsj-text-medium-gray)] font-sans">
                               <span className="text-[var(--wsj-blue-primary)]">
                                 By <Link href={`/editor/${heroArticle.editor.slug}`} className="hover:underline">
@@ -224,124 +248,40 @@ export default async function CategoryPage({ params }: PageProps) {
                               {heroArticle.publishedAt && (
                                 <>
                                   <span>•</span>
-                                  <span>{format(heroArticle.publishedAt, 'MMMM d, yyyy')}</span>
-                                </>
-                              )}
-                              {heroArticle.readTime && (
-                                <>
-                                  <span>•</span>
-                                  <div className="flex items-center gap-1">
-                                    <Clock className="w-3 h-3" />
-                                    <span>{heroArticle.readTime} min read</span>
-                                  </div>
+                                  <span>{format(heroArticle.publishedAt, 'MMM d, yyyy')}</span>
                                 </>
                               )}
                             </div>
                           </div>
-                        </>
-                      )
-                    })()}
-                  </div>
-                </article>
-              )}
-
-              {/* Grid of 3 Articles */}
-              {gridArticles.length > 0 && (
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12 pb-12 border-b border-[var(--wsj-border-light)]">
-                  {gridArticles.map((article) => {
-                    const articleUrl = getArticleUrl(article)
-                    const articleImageUrl = article.featuredImageMediaId
-                      ? `${baseUrl}/api/media/${article.featuredImageMediaId}`
-                      : article.featuredImage || null
-                    return (
-                      <article key={article.id} className="group">
-                        {/* Article Image */}
-                        {articleImageUrl && (
-                          <Link href={articleUrl} className="block relative w-full h-[200px] mb-4 overflow-hidden">
-                            <Image
-                              src={articleImageUrl}
-                              alt={article.featuredImageAltText || article.title}
-                              fill
-                              className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-                              sizes="(max-width: 768px) 100vw, 33vw"
-                            />
-                          </Link>
-                        )}
-                        
-                        {/* Category Tag */}
-                        <div className="mb-2">
-                          <span className="text-[11px] font-sans font-bold uppercase tracking-wider text-[var(--wsj-text-medium-gray)]">
-                            {article.category.name}
-                          </span>
-                        </div>
-                        
-                        {/* Title */}
-                        <Link href={articleUrl}>
-                          <h3 className="font-serif font-bold text-[20px] leading-[var(--wsj-line-height-normal)] text-[var(--wsj-text-black)] group-hover:underline mb-3">
-                            {article.title}
-                          </h3>
-                        </Link>
-                        
-                        {/* Excerpt */}
-                        {article.excerpt && (
-                          <p className="text-[15px] text-[var(--wsj-text-dark-gray)] mb-3 font-serif leading-[var(--wsj-line-height-loose)] line-clamp-3">
-                            {article.excerpt}
-                          </p>
-                        )}
-                        
-                        {/* Author and Metadata */}
-                        <div className="flex flex-wrap items-center gap-2 text-[12px] text-[var(--wsj-text-medium-gray)] font-sans">
-                          <span className="text-[var(--wsj-blue-primary)]">
-                            By <Link href={`/editor/${article.editor.slug}`} className="hover:underline">
-                              {article.editor.name}
-                            </Link>
-                          </span>
-                          {article.publishedAt && (
-                            <>
-                              <span>•</span>
-                              <span>{format(article.publishedAt, 'h:mm a')}</span>
-                            </>
-                          )}
-                          {article.readTime && (
-                            <>
-                              <span>•</span>
-                              <span>{article.readTime} min read</span>
-                            </>
-                          )}
                         </div>
                       </article>
                     )
-                  })}
-                </div>
-              )}
+                  })()}
 
-              {/* Additional Articles - 2 Column Grid */}
-              {additionalArticles.length > 0 && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  {additionalArticles.map((article) => {
-                    const articleUrl = getArticleUrl(article)
-                    const articleImageUrl = article.featuredImageMediaId
-                      ? `${baseUrl}/api/media/${article.featuredImageMediaId}`
-                      : article.featuredImage || null
-                    return (
-                      <article key={article.id} className="group pb-8 border-b border-[var(--wsj-border-light)]">
-                        <div className="flex gap-4">
-                          {/* Article Image */}
-                          {articleImageUrl && (
-                            <Link href={articleUrl} className="block relative w-[140px] h-[100px] flex-shrink-0 overflow-hidden">
-                              <Image
-                                src={articleImageUrl}
-                                alt={article.featuredImageAltText || article.title}
-                                fill
-                                className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-                                sizes="140px"
-                              />
-                            </Link>
-                          )}
-                          
-                          {/* Article Content */}
-                          <div className="flex-1">
-                            {/* Category Tag */}
+                  {/* Articles in Rows of 3 */}
+                  {articleRows.map((rowArticles, rowIndex) => (
+                    <div key={rowIndex} className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      {rowArticles.map((article) => {
+                        const articleUrl = getArticleUrl(article)
+                        const articleImageUrl = article.featuredImageMediaId
+                          ? `${baseUrl}/api/media/${article.featuredImageMediaId}`
+                          : article.featuredImage || null
+                        return (
+                          <article key={article.id} className="group">
+                            {/* Article Image */}
+                            {articleImageUrl && (
+                              <Link href={articleUrl} className="block relative w-full h-[180px] mb-3 overflow-hidden">
+                                <Image
+                                  src={articleImageUrl}
+                                  alt={article.featuredImageAltText || article.title}
+                                  fill
+                                  className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                                  sizes="(max-width: 768px) 100vw, 33vw"
+                                />
+                              </Link>
+                            )}
+                            
+                            {/* Category */}
                             <div className="mb-2">
                               <span className="text-[11px] font-sans font-bold uppercase tracking-wider text-[var(--wsj-text-medium-gray)]">
                                 {article.category.name}
@@ -350,12 +290,12 @@ export default async function CategoryPage({ params }: PageProps) {
                             
                             {/* Title */}
                             <Link href={articleUrl}>
-                              <h3 className="font-serif font-bold text-[18px] leading-[var(--wsj-line-height-normal)] text-[var(--wsj-text-black)] group-hover:underline mb-2">
+                              <h3 className="font-serif font-bold text-[18px] leading-[1.25] text-[var(--wsj-text-black)] group-hover:underline mb-2">
                                 {article.title}
                               </h3>
                             </Link>
                             
-                            {/* Author and Metadata */}
+                            {/* Author and Date */}
                             <div className="flex flex-wrap items-center gap-2 text-[12px] text-[var(--wsj-text-medium-gray)] font-sans">
                               <span className="text-[var(--wsj-blue-primary)]">
                                 By <Link href={`/editor/${article.editor.slug}`} className="hover:underline">
@@ -365,25 +305,69 @@ export default async function CategoryPage({ params }: PageProps) {
                               {article.publishedAt && (
                                 <>
                                   <span>•</span>
-                                  <span>{format(article.publishedAt, 'h:mm a')}</span>
-                                </>
-                              )}
-                              {article.readTime && (
-                                <>
-                                  <span>•</span>
-                                  <span>{article.readTime} min read</span>
+                                  <span>{format(article.publishedAt, 'MMM d')}</span>
                                 </>
                               )}
                             </div>
-                          </div>
-                        </div>
-                      </article>
-                    )
-                  })}
+                          </article>
+                        )
+                      })}
+                    </div>
+                  ))}
                 </div>
-              )}
-            </>
-          )}
+
+                {/* Second Column - 30% - Most Popular */}
+                <aside className="lg:pl-6 lg:border-l border-[var(--wsj-border-light)]">
+                  <h2 className="font-serif font-bold text-[24px] text-[var(--wsj-text-black)] mb-6">
+                    Most Popular
+                  </h2>
+                  <div className="space-y-6">
+                    {popularArticles.map((article, index) => {
+                      const articleUrl = getArticleUrl(article)
+                      const articleImageUrl = article.featuredImageMediaId
+                        ? `${baseUrl}/api/media/${article.featuredImageMediaId}`
+                        : article.featuredImage || null
+                      return (
+                        <article key={article.id} className="group">
+                          <div className="flex gap-3">
+                            {/* Content */}
+                            <div className="flex-1">
+                              {/* Article Image */}
+                              {articleImageUrl && (
+                                <Link href={articleUrl} className="block relative w-full h-[120px] mb-2 overflow-hidden">
+                                  <Image
+                                    src={articleImageUrl}
+                                    alt={article.featuredImageAltText || article.title}
+                                    fill
+                                    className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                                    sizes="(max-width: 768px) 100vw, 30vw"
+                                  />
+                                </Link>
+                              )}
+                              
+                              {/* Title */}
+                              <Link href={articleUrl}>
+                                <h3 className="font-serif font-bold text-[16px] leading-[1.3] text-[var(--wsj-text-black)] group-hover:underline mb-1">
+                                  {article.title}
+                                </h3>
+                              </Link>
+                              
+                              {/* Date */}
+                              {article.publishedAt && (
+                                <div className="text-[12px] text-[var(--wsj-text-medium-gray)] font-sans">
+                                  {format(article.publishedAt, 'MMM d, yyyy')}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </article>
+                      )
+                    })}
+                  </div>
+                </aside>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </>
