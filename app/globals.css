@@ -477,6 +477,12 @@
   font-weight: var(--wsj-font-weight-bold);
 }
 
+.wsj-nav-link-compact {
+  padding-top: 6px;
+  padding-bottom: 6px;
+  font-size: 13px;
+}
+
 /* === ARTICLE CONTENT === */
 .article-content {
   font-family: var(--wsj-font-sans);          /* Body is sans-serif */

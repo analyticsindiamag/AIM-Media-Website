@@ -300,16 +300,20 @@ export function Header() {
           </div>
 
           {/* Main Navigation row */}
-          <nav className={`px-4 md:px-8 transition-all duration-300 ${isScrolled ? 'hidden' : ''}`}>
-            <div className="flex items-center justify-between gap-0 h-[var(--wsj-header-nav-height)]">
-              <div className="flex items-center gap-0">
-                {navLinks.map((l, index) => {
+          <nav
+            className={`px-4 md:px-8 transition-all duration-300 ${isScrolled ? 'border-t border-[var(--wsj-border-light)] bg-white' : ''}`}
+          >
+            <div
+              className={`flex items-center gap-3 ${isScrolled ? 'h-10' : 'h-[var(--wsj-header-nav-height)]'}`}
+            >
+              <div className="flex items-center gap-0 flex-1 overflow-x-auto min-w-0">
+                {navLinks.map((l) => {
                   const isActive = pathname === l.href || (l.href !== '/' && pathname?.startsWith(l.href))
                   return (
                     <Link
                       key={l.href}
                       href={l.href}
-                      className={`wsj-nav-link ${isActive ? 'wsj-nav-link-active' : ''}`}
+                      className={`wsj-nav-link ${isActive ? 'wsj-nav-link-active' : ''} ${isScrolled ? 'wsj-nav-link-compact' : ''} flex-shrink-0`}
                     >
                       {l.label}
                     </Link>
@@ -319,7 +323,7 @@ export function Header() {
               {/* Search icon at the end of navigation */}
               <button
                 onClick={() => setShowSearch(true)}
-                className="text-[var(--wsj-text-black)] hover:text-[var(--wsj-text-medium-gray)] transition-colors p-2"
+                className={`text-[var(--wsj-text-black)] hover:text-[var(--wsj-text-medium-gray)] transition-colors flex-shrink-0 ${isScrolled ? 'p-1.5' : 'p-2'}`}
                 aria-label="Search"
               >
                 <Search className="w-5 h-5" />

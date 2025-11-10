@@ -253,8 +253,24 @@ export default async function ArticlePage({ params }: PageProps) {
               </p>
             )}
 
-            {/* Grey box with buttons (social share, text resize, comment) */}
-            <div className="bg-[#f5f5f5] rounded-sm p-4 mb-8 flex justify-center">
+            {/* By editor, then date */}
+            <div className="mb-6 space-y-1">
+              <div className="flex items-center gap-1 text-[14px] font-sans">
+                <span className="text-[var(--wsj-text-dark-gray)]">By</span>
+                <Link 
+                  href={`/editor/${article.editor.slug}`}
+                  className="text-[var(--wsj-blue-primary)] hover:underline font-medium"
+                >
+                  {article.editor.name}
+                </Link>
+              </div>
+              <div className="text-[13px] text-[#666666] font-sans">
+                {article.publishedAt && format(article.publishedAt, 'MMM. d, yyyy h:mm a')} ET
+              </div>
+            </div>
+
+            {/* Article tools (share, resize, comment) */}
+            <div className="p-4 mb-8 flex justify-center">
               <ArticleInteractiveBar
                 url={`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/article/${article.slug}`}
                 title={article.title}
@@ -287,22 +303,6 @@ export default async function ArticlePage({ params }: PageProps) {
                 )}
               </div>
             )}
-
-            {/* By editor, then date */}
-            <div className="mb-6 space-y-1">
-              <div className="flex items-center gap-1 text-[14px] font-sans">
-                <span className="text-[var(--wsj-text-dark-gray)]">By</span>
-                <Link 
-                  href={`/editor/${article.editor.slug}`}
-                  className="text-[var(--wsj-blue-primary)] hover:underline font-medium"
-                >
-                  {article.editor.name}
-                </Link>
-              </div>
-              <div className="text-[13px] text-[#666666] font-sans">
-                {article.publishedAt && format(article.publishedAt, 'MMM. d, yyyy h:mm a')} ET
-              </div>
-            </div>
 
             {/* Article Content */}
             <div 
