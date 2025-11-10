@@ -26,6 +26,9 @@ import {
   fetchWordPressPosts,
   fetchWordPressMedia,
   type WordPressConfig,
+  type WordPressUser,
+  type WordPressCategory,
+  type WordPressPost,
 } from '../lib/wordpress-api-client'
 import {
   mapWordPressUserToEditor,
@@ -71,7 +74,7 @@ class ImportLogger {
       console.error(`${prefix} ${messageStr}`)
     } else if (level === 'WARN') {
       console.warn(`${prefix} ${messageStr}`)
-    } else if (this.verbose || level === 'SUCCESS' || level === 'ERROR') {
+    } else if (this.verbose || level === 'SUCCESS') {
       console.log(`${prefix} ${messageStr}`)
     }
   }
@@ -188,7 +191,7 @@ async function importWordPress(logger: ImportLogger, config: WordPressConfig, op
 
   // Step 1: Import Users/Editors
   logger.info('system', 'Fetching WordPress users...')
-  let wpUsers
+  let wpUsers: WordPressUser[] = []
   try {
     wpUsers = await fetchWordPressUsers(config)
     logger.info('system', `Found ${wpUsers.length} users`)
@@ -317,7 +320,7 @@ async function importWordPress(logger: ImportLogger, config: WordPressConfig, op
 
   // Step 2: Import Categories
   logger.info('system', 'Fetching WordPress categories...')
-  let wpCategories
+  let wpCategories: WordPressCategory[] = []
   try {
     wpCategories = await fetchWordPressCategories(config)
     logger.info('system', `Found ${wpCategories.length} categories`)
@@ -439,7 +442,7 @@ async function importWordPress(logger: ImportLogger, config: WordPressConfig, op
 
   // Step 3: Import Posts/Articles
   logger.info('system', 'Fetching WordPress posts...', { status: importStatus })
-  let wpPosts
+  let wpPosts: WordPressPost[] = []
   try {
     wpPosts = await fetchWordPressPosts(config, Array.isArray(importStatus) ? importStatus : ['publish'])
     logger.info('system', `Found ${wpPosts.length} posts`)
