@@ -46,6 +46,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+  const editorImage = editor.image || editor.avatar
+  const editorImageUrl = editorImage ? String(editorImage) : undefined
+  
   return {
     title: editor.name,
     description: editor.bio || `Articles by ${editor.name}`,
@@ -57,7 +60,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       url: `${baseUrl}/editor/${slug}`,
       title: editor.name,
       description: editor.bio || `Articles by ${editor.name}`,
-      images: (editor.image || editor.avatar) ? [{ url: editor.image || editor.avatar }] : [],
+      images: editorImageUrl ? [{ url: editorImageUrl }] : [],
     },
     twitter: {
       card: 'summary',
