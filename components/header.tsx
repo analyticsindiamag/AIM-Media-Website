@@ -38,6 +38,7 @@ export function Header() {
   const [headerBarRightLink, setHeaderBarRightLink] = useState<string>('')
   const [showUserMenu, setShowUserMenu] = useState(false)
   const [isScrolled, setIsScrolled] = useState(false)
+  const [customNavLinks, setCustomNavLinks] = useState<Array<{href: string, label: string}> | null>(null)
 
   useEffect(() => {
     fetch('/api/categories')
@@ -54,6 +55,21 @@ export function Header() {
         if (settings.headerBarLeftLink) setHeaderBarLeftLink(settings.headerBarLeftLink)
         if (settings.headerBarRightText) setHeaderBarRightText(settings.headerBarRightText)
         if (settings.headerBarRightLink) setHeaderBarRightLink(settings.headerBarRightLink)
+        
+        // Parse custom nav links if provided
+        if (settings.navLinksJson) {
+          try {
+            const parsed = JSON.parse(settings.navLinksJson)
+            if (Array.isArray(parsed) && parsed.length > 0) {
+              setCustomNavLinks(parsed)
+            }
+          } catch (e) {
+            console.error('Failed to parse navLinksJson:', e)
+            setCustomNavLinks(null)
+          }
+        } else {
+          setCustomNavLinks(null)
+        }
       })
       .catch(() => {})
   }, [])
@@ -92,16 +108,19 @@ export function Header() {
   }, [searchQuery])
 
   const navLinks = useMemo(() => {
-    // Always include Latest as first item
+    // Use custom nav links if provided, otherwise use categories
+    if (customNavLinks && customNavLinks.length > 0) {
+      return customNavLinks
+    }
+    
+    // Fallback to categories with Latest first
     const latestLink = { href: '/', label: 'Latest' }
-    // Map categories to nav links
     const categoryLinks = categories.map((c) => ({ 
       href: `/category/${c.slug}`, 
       label: c.name 
     }))
-    // Combine with Latest first
     return [latestLink, ...categoryLinks]
-  }, [categories])
+  }, [categories, customNavLinks])
 
   // Hide header on admin routes
   if (pathname?.startsWith('/admin')) return null
