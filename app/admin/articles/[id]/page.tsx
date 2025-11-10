@@ -48,8 +48,21 @@ export default function EditArticlePage() {
         ])
         if (!articleRes.ok) throw new Error('Failed to load article')
         const article = await articleRes.json()
-        setCategories(await catsRes.json())
-        setEditors(await edsRes.json())
+        const [catsPayload, edsPayload] = await Promise.all([catsRes.json(), edsRes.json()])
+
+        const normalizedCategories = Array.isArray(catsPayload)
+          ? (catsPayload as Category[])
+          : catsPayload && typeof catsPayload === 'object' && Array.isArray((catsPayload as { categories?: Category[] }).categories)
+            ? (catsPayload as { categories: Category[] }).categories
+            : []
+        const normalizedEditors = Array.isArray(edsPayload)
+          ? (edsPayload as Editor[])
+          : edsPayload && typeof edsPayload === 'object' && Array.isArray((edsPayload as { editors?: Editor[] }).editors)
+            ? (edsPayload as { editors: Editor[] }).editors
+            : []
+
+        setCategories(normalizedCategories)
+        setEditors(normalizedEditors)
         
         // Format scheduledAt for datetime-local input
         const scheduledAtValue = article.scheduledAt 

@@ -9,6 +9,7 @@ interface ImportRowData {
   excerpt: string
   date: string
   categoryRaw: string
+  permalinkCategorySlug: string | null
   imageUrl: string
   imageTitle: string
   imageCaption: string
@@ -121,21 +122,26 @@ function extractRowData(row: Record<string, string>, get: (keys: string[]) => st
         const permalink = get(['permalink'])
         const slugProvided = get(['slug'])
         
-  // Extract slug from permalink if provided
+  // Extract slug (last segment) and category slug (penultimate segment) from permalink if provided
         let finalSlug = slugProvided
+        let permalinkCategorySlug: string | null = null
         if (permalink) {
+          const extractFromPath = (path: string) => {
+            const pathParts = path.split('/').filter(Boolean)
+            if (pathParts.length > 0) {
+              finalSlug = pathParts[pathParts.length - 1]
+            }
+            if (pathParts.length >= 2) {
+              permalinkCategorySlug = pathParts[pathParts.length - 2]
+            }
+          }
+
           try {
             const url = new URL(permalink)
-            const pathParts = url.pathname.split('/').filter(Boolean)
-            if (pathParts.length > 0) {
-              finalSlug = pathParts[pathParts.length - 1]
-            }
+            extractFromPath(url.pathname)
           } catch {
             // If permalink is not a full URL, try to parse it as a path
-            const pathParts = permalink.split('/').filter(Boolean)
-            if (pathParts.length > 0) {
-              finalSlug = pathParts[pathParts.length - 1]
-            }
+            extractFromPath(permalink)
           }
         }
         
@@ -149,6 +155,7 @@ function extractRowData(row: Record<string, string>, get: (keys: string[]) => st
     excerpt,
     date,
     categoryRaw,
+    permalinkCategorySlug,
     imageUrl,
     imageTitle,
     imageCaption,
@@ -256,6 +263,12 @@ function validateRowData(data: ImportRowData): ValidationResult {
       errors.push(`Slug is too long (max 200 characters): "${data.finalSlug}"`)
     }
     // Note: We'll convert slug to proper format during import, so we don't need strict format validation here
+  }
+
+  if (data.permalinkCategorySlug && data.permalinkCategorySlug.trim()) {
+    if (data.permalinkCategorySlug.trim().length > 200) {
+      errors.push(`Category slug derived from permalink is too long (max 200 characters): "${data.permalinkCategorySlug}"`)
+    }
   }
 
   // Category validation
@@ -404,12 +417,28 @@ export async function POST(request: NextRequest) {
         } = rowData
 
         // Determine category (first if multiple separated by ; , |)
-        const categoryName = decodeHtmlEntities(
-          (categoryRaw || 'General')
-            .split(/[;|,]/)[0]
-            .trim()
-        )
-        const categorySlug = toSlug(categoryName || 'general')
+        const rawCategoryName = (categoryRaw || '').split(/[;|,]/)[0]?.trim() || ''
+        let categoryName = decodeHtmlEntities(rawCategoryName)
+        let categorySlug = rowData.permalinkCategorySlug
+          ? toSlug(rowData.permalinkCategorySlug)
+          : toSlug(categoryName || '')
+
+        if (!categoryName) {
+          if (rowData.permalinkCategorySlug) {
+            const readableName = rowData.permalinkCategorySlug
+              .split('-')
+              .filter(Boolean)
+              .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+              .join(' ')
+            categoryName = readableName || 'General'
+          } else {
+            categoryName = 'General'
+          }
+        }
+
+        if (!categorySlug) {
+          categorySlug = toSlug(categoryName) || 'general'
+        }
 
         let category = await prisma.category.findFirst({
           where: { slug: categorySlug },

@@ -43,8 +43,20 @@ export function Header() {
   useEffect(() => {
     fetch('/api/categories')
       .then((r) => r.json())
-      .then((data: Category[]) => setCategories(data))
-      .catch(() => setCategories([]))
+      .then((data: unknown) => {
+        if (Array.isArray(data)) {
+          setCategories(data as Category[])
+        } else if (data && typeof data === 'object' && Array.isArray((data as { categories?: Category[] }).categories)) {
+          setCategories((data as { categories: Category[] }).categories)
+        } else {
+          console.warn('Unexpected categories response payload', data)
+          setCategories([])
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to load categories', err)
+        setCategories([])
+      })
     
     fetch('/api/settings')
       .then((r) => r.json())

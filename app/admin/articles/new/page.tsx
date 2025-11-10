@@ -58,8 +58,19 @@ export default function NewArticlePage() {
       fetch('/api/categories').then((res) => res.json()),
       fetch('/api/editors').then((res) => res.json()),
     ]).then(([cats, eds]) => {
-      setCategories(cats)
-      setEditors(eds)
+      const normalizedCategories = Array.isArray(cats)
+        ? (cats as Category[])
+        : cats && typeof cats === 'object' && Array.isArray((cats as { categories?: Category[] }).categories)
+          ? (cats as { categories: Category[] }).categories
+          : []
+      const normalizedEditors = Array.isArray(eds)
+        ? (eds as Editor[])
+        : eds && typeof eds === 'object' && Array.isArray((eds as { editors?: Editor[] }).editors)
+          ? (eds as { editors: Editor[] }).editors
+          : []
+
+      setCategories(normalizedCategories)
+      setEditors(normalizedEditors)
     })
   }, [])
 

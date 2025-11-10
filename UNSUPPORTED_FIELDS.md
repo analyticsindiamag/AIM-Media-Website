@@ -14,7 +14,6 @@ Based on the WordPress CSV structure provided, here are the fields that are **NO
 |------------|-------------|-------------------|
 | `ID` | WordPress post ID | We use our own auto-generated IDs (CUID) |
 | `Post Type` | WordPress post type (post, page, etc.) | WordPress-specific, not needed |
-| `Permalink` | WordPress permalink URL | We generate our own URLs based on slug |
 | `Format` | WordPress post format (standard, aside, etc.) | WordPress-specific feature |
 | `Template` | WordPress template assignment | WordPress-specific feature |
 | `Parent` | Hierarchical post parent ID | We don't support hierarchical posts |

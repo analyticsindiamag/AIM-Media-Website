@@ -14,6 +14,7 @@ This document outlines how WordPress CSV export fields are mapped to our databas
 | `Slug` | `article.slug` | Auto-generated from title if not provided |
 | `Date` / `Post Date` | `article.publishedAt` | Publication date |
 | `Status` | `article.published` | Maps "publish" → true, others → false |
+| `Permalink` | `article.slug` & `category.slug` | Preserves WordPress path by extracting the final segment (article slug) and penultimate segment (category slug) |
 
 ### ✅ Category Fields
 
@@ -63,7 +64,6 @@ These WordPress CSV fields are present in the export but are **not imported** in
 |---------------------|---------------------|
 | `ID` | WordPress post ID - not needed, we use our own IDs |
 | `Post Type` | WordPress-specific field (post, page, etc.) |
-| `Permalink` | We generate our own URLs based on slug |
 | `Format` | WordPress post format (standard, aside, etc.) |
 | `Template` | WordPress template assignment |
 | `Parent` | Hierarchical post parent ID |
@@ -101,8 +101,8 @@ These WordPress CSV fields are present in the export but are **not imported** in
 
 ### Category Handling
 - Categories are automatically created if they don't exist
-- Category slug is auto-generated from the category name
-- If no category is provided, "General" is used as default
+- Category slug is taken from the WordPress permalink when available; otherwise it is generated from the category name
+- If no category is provided and permalink lacks a category, "General" is used as default
 - If multiple categories are provided (separated by `;`, `,`, or `|`), only the first one is used
 
 ### Editor/Author Handling
@@ -144,8 +144,8 @@ If you need any of the unsupported fields, consider:
 ### WordPress Permalink Format
 - WordPress uses the format: `/{category-slug}/{article-slug}`
 - Example: `https://aimmediahouse.com/recognitions-lists/20-hottest-ai-startups-in-india-2022`
-- The import route extracts the article slug from the `Permalink` field (last part after the final slash)
-- If `Permalink` is not provided, it falls back to the `Slug` field or generates one from the title
+- The import route extracts both the category slug (penultimate segment) and the article slug (final segment) from the `Permalink` field
+- If `Permalink` is not provided, it falls back to the `Slug` field or generates one from the title, and the category slug is derived from the category name
 
 ### URL Structure
 - **Old format**: `/article/{slug}` (kept for backward compatibility)
@@ -160,5 +160,5 @@ ID	Title	Content	Excerpt	Date	Permalink	Categories	Image URL	Status	Author Email
 862	"Article Title"	"<p>Content...</p>"	"Excerpt..."	2022-11-20	"https://aimmediahouse.com/recognitions-lists/20-hottest-ai-startups-in-india-2022"	"Recognitions & Lists"	"https://example.com/image.jpg"	publish	"author@example.com"	"John"	"Doe"	"20-hottest-ai-startups-in-india-2022"	"SEO Title"	"SEO Description"
 ```
 
-**Note**: The `Permalink` field is used to extract the exact slug. The resulting URL will be: `/recognitions-lists/20-hottest-ai-startups-in-india-2022`
+**Note**: The `Permalink` field is used to extract the exact category + slug combination. The resulting URL will be: `/recognitions-lists/20-hottest-ai-startups-in-india-2022`
 

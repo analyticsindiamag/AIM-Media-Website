@@ -39,7 +39,14 @@ export default function CategoriesPage() {
   const fetchCategories = async () => {
     const response = await fetch('/api/categories')
     const data = await response.json()
-    setCategories(data)
+    if (Array.isArray(data)) {
+      setCategories(data as Category[])
+    } else if (data && typeof data === 'object' && Array.isArray((data as { categories?: Category[] }).categories)) {
+      setCategories((data as { categories: Category[] }).categories)
+    } else {
+      console.warn('Unexpected categories response', data)
+      setCategories([])
+    }
   }
 
   // Auto-generate slug from name
