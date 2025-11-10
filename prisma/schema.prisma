@@ -162,7 +162,7 @@ model SponsoredBanner {
   title        String // Banner title/name for admin
   imageUrl     String // Banner image URL
   linkUrl      String? // Click-through URL (optional)
-  type         String // 'homepage-main' | 'homepage-side' | 'article-side'
+  type         String // 'homepage-main' | 'homepage-side' | 'article-side' | 'article-top'
   active       Boolean   @default(true)
   startDate    DateTime?
   endDate      DateTime?

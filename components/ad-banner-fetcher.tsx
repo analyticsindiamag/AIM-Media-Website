@@ -2,7 +2,7 @@ import { prisma } from '@/lib/prisma'
 import { AdBanner } from './ad-banner'
 
 interface AdBannerFetcherProps {
-  type: 'homepage-main' | 'homepage-side' | 'article-side'
+  type: 'homepage-main' | 'homepage-side' | 'article-side' | 'article-top'
 }
 
 export async function AdBannerFetcher({ type }: AdBannerFetcherProps) {

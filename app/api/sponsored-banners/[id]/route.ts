@@ -39,9 +39,9 @@ export async function PUT(
     if (imageUrl !== undefined) updateData.imageUrl = imageUrl
     if (linkUrl !== undefined) updateData.linkUrl = linkUrl || null
     if (type !== undefined) {
-      if (!['homepage-main', 'homepage-side', 'article-side'].includes(type)) {
+      if (!['homepage-main', 'homepage-side', 'article-side', 'article-top'].includes(type)) {
         return NextResponse.json(
-          { error: 'Invalid type. Must be: homepage-main, homepage-side, or article-side' },
+          { error: 'Invalid type. Must be: homepage-main, homepage-side, article-side, or article-top' },
           { status: 400 }
         )
       }

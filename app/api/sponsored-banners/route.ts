@@ -4,7 +4,7 @@ import { prisma } from '@/lib/prisma'
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams
-    const type = searchParams.get('type') // 'homepage-main' | 'homepage-side' | 'article-side'
+    const type = searchParams.get('type') // 'homepage-main' | 'homepage-side' | 'article-side' | 'article-top'
     const activeOnly = searchParams.get('active') !== 'false'
 
     const now = new Date()
@@ -54,9 +54,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    if (!['homepage-main', 'homepage-side', 'article-side'].includes(type)) {
+    if (!['homepage-main', 'homepage-side', 'article-side', 'article-top'].includes(type)) {
       return NextResponse.json(
-        { error: 'Invalid type. Must be: homepage-main, homepage-side, or article-side' },
+        { error: 'Invalid type. Must be: homepage-main, homepage-side, article-side, or article-top' },
         { status: 400 }
       )
     }

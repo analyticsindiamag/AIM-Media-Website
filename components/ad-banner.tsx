@@ -4,7 +4,7 @@ import Image from 'next/image'
 interface AdBannerProps {
   imageUrl: string
   linkUrl?: string | null
-  type: 'homepage-main' | 'homepage-side' | 'article-side'
+  type: 'homepage-main' | 'homepage-side' | 'article-side' | 'article-top'
   alt?: string
 }
 
@@ -16,7 +16,7 @@ export function AdBanner({ imageUrl, linkUrl, type, alt = 'Advertisement' }: AdB
 
   const bannerContent = (
     <div className="relative w-full">
-      {type === 'homepage-main' ? (
+      {type === 'homepage-main' || type === 'article-top' ? (
         <div className="relative w-full h-[250px] md:h-[300px] bg-black overflow-hidden">
           <Image
             src={imageUrl}

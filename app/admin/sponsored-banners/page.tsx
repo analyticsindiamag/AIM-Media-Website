@@ -13,7 +13,7 @@ interface SponsoredBanner {
   title: string
   imageUrl: string
   linkUrl: string | null
-  type: 'homepage-main' | 'homepage-side' | 'article-side'
+  type: 'homepage-main' | 'homepage-side' | 'article-side' | 'article-top'
   active: boolean
   startDate: string | null
   endDate: string | null
@@ -31,7 +31,7 @@ export default function SponsoredBannersPage() {
     title: '',
     imageUrl: '',
     linkUrl: '',
-    type: 'homepage-main' as 'homepage-main' | 'homepage-side' | 'article-side',
+    type: 'homepage-main' as 'homepage-main' | 'homepage-side' | 'article-side' | 'article-top',
     active: true,
     startDate: '',
     endDate: '',
@@ -141,6 +141,7 @@ export default function SponsoredBannersPage() {
       case 'homepage-main': return 'Homepage Main Banner (Horizontal)'
       case 'homepage-side': return 'Homepage Side Banner (Vertical)'
       case 'article-side': return 'Article Side Banner (Vertical)'
+      case 'article-top': return 'Article Top Banner (Horizontal)'
       default: return type
     }
   }
@@ -217,6 +218,7 @@ export default function SponsoredBannersPage() {
                 <option value="homepage-main">Homepage Main Banner (Horizontal)</option>
                 <option value="homepage-side">Homepage Side Banner (Vertical)</option>
                 <option value="article-side">Article Side Banner (Vertical)</option>
+                <option value="article-top">Article Top Banner (Horizontal)</option>
               </select>
             </div>
 
