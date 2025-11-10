@@ -12,11 +12,12 @@ interface ImageUploadProps {
   mediaId?: string | null // Media ID from database
   onChange: (url: string, mediaId?: string | null) => void
   label: string
+  helpText?: string // Optional help text displayed below the label
 }
 
 type ImageSource = 'url' | 'gallery'
 
-export function ImageUpload({ value, mediaId, onChange, label }: ImageUploadProps) {
+export function ImageUpload({ value, mediaId, onChange, label, helpText }: ImageUploadProps) {
   const [uploading, setUploading] = useState(false)
   const [error, setError] = useState<string>('')
   const [source, setSource] = useState<ImageSource>(mediaId ? 'gallery' : (value ? 'url' : 'url'))
@@ -96,6 +97,7 @@ export function ImageUpload({ value, mediaId, onChange, label }: ImageUploadProp
   return (
     <div>
       <label className="block text-sm font-medium mb-2">{label}</label>
+      {helpText && <p className="text-sm text-gray-500 mb-2">{helpText}</p>}
 
       {/* Source Selection */}
       <div className="flex gap-2 mb-4">
