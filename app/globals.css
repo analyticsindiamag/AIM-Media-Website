@@ -55,9 +55,9 @@
   --wsj-font-size-2xl: 24px;       /* H3 */
   --wsj-font-size-3xl: 28px;       /* H2 */
   --wsj-font-size-4xl: 32px;
-  --wsj-font-size-5xl: 36px;
-  --wsj-font-size-6xl: 42px;       /* H1 */
-  --wsj-font-size-7xl: 48px;       /* H1 desktop */
+  --wsj-font-size-5xl: 34px;
+  --wsj-font-size-6xl: 36px;       /* H1 */
+  --wsj-font-size-7xl: 42px;       /* H1 desktop */
   --wsj-font-size-quote: 20px;     /* New: for pull quotes */
   
   /* Font weights - standard values */

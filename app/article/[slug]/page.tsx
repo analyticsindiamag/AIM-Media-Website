@@ -252,9 +252,9 @@ export default async function ArticlePage({ params }: PageProps) {
                 {article.excerpt}
               </p>
             )}
-
+ 
             {/* By editor, then date */}
-            <div className="mb-6 space-y-1">
+                <div className="mb-6 space-y-1">
               <div className="flex items-center gap-1 text-[14px] font-sans">
                 <span className="text-[var(--wsj-text-dark-gray)]">By</span>
                 <Link 
@@ -270,7 +270,7 @@ export default async function ArticlePage({ params }: PageProps) {
             </div>
 
             {/* Article tools (share, resize, comment) */}
-            <div className="p-4 mb-8 flex justify-center">
+            <div className="mb-8 flex justify-center">
               <ArticleInteractiveBar
                 url={`${process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'}/article/${article.slug}`}
                 title={article.title}
@@ -330,32 +330,32 @@ export default async function ArticlePage({ params }: PageProps) {
                     : relatedArticle.featuredImage || null
                   return (
                   <article key={relatedArticle.id} className="group bg-white">
-                    <Link href={relatedUrl}>
-                      {relatedImageUrl && (
-                        <div className="relative w-full h-[200px] md:h-[240px] overflow-hidden">
-                          <Image
-                            src={relatedImageUrl}
-                            alt={relatedArticle.title}
-                            fill
-                            loading="lazy"
-                            className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
-                            sizes="(max-width: 768px) 100vw, 33vw"
-                          />
-                        </div>
-                      )}
-                      <div className="p-4">
+                    {relatedImageUrl && (
+                    <Link href={relatedUrl} className="block relative w-full h-[200px] md:h-[240px] overflow-hidden">
+                      <Image
+                        src={relatedImageUrl}
+                        alt={relatedArticle.title}
+                        fill
+                        loading="lazy"
+                        className="object-cover transition-transform duration-300 group-hover:scale-[1.02]"
+                        sizes="(max-width: 768px) 100vw, 33vw"
+                      />
+                    </Link>
+                    )}
+                    <div className="p-4">
+                      <Link href={relatedUrl}>
                         <h3 className="font-serif font-bold text-xl md:text-2xl leading-tight text-[var(--wsj-text-black)] group-hover:underline mb-2">
                           {relatedArticle.title}
                         </h3>
-                        <div className="text-[13px] text-[var(--wsj-text-medium-gray)] font-sans">
-                          {relatedArticle.publishedAt && format(relatedArticle.publishedAt, 'MMM d, yyyy')}
-                          {relatedArticle.publishedAt && ' · '}
-                          <Link href={`/editor/${relatedArticle.editor.slug}`} className="hover:underline">
-                            {relatedArticle.editor.name}
-                          </Link>
-                        </div>
+                      </Link>
+                      <div className="text-[13px] text-[var(--wsj-text-medium-gray)] font-sans">
+                        {relatedArticle.publishedAt && format(relatedArticle.publishedAt, 'MMM d, yyyy')}
+                        {relatedArticle.publishedAt && ' · '}
+                        <Link href={`/editor/${relatedArticle.editor.slug}`} className="hover:underline">
+                          {relatedArticle.editor.name}
+                        </Link>
                       </div>
-                    </Link>
+                    </div>
                   </article>
                   )
                 })}

@@ -44,9 +44,9 @@ async function main() {
       fontSize2xl: '24px', // H3
       fontSize3xl: '28px', // H2
       fontSize4xl: '32px',
-      fontSize5xl: '36px',
-      fontSize6xl: '42px', // H1
-      fontSize7xl: '48px', // H1 on desktop
+      fontSize5xl: '34px',
+      fontSize6xl: '36px', // H1
+      fontSize7xl: '42px', // H1 on desktop
       fontSizeQuote: '20px', // New: for pull quotes (18-22px range)
       fontWeightLight: '300',
       fontWeightNormal: '400', // Updated: was 350

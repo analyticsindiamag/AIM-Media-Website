@@ -177,10 +177,18 @@ export default async function CategoryPage({ params }: PageProps) {
 
         <div className="py-6 md:py-8">
           <div className="max-w-[1400px] mx-auto px-6 md:px-8 lg:px-12">
-            {/* Big Heading */}
-            <h1 className="font-serif font-bold text-[48px] md:text-[56px] leading-[1.1] text-[var(--wsj-text-black)] mb-8">
-              {category.name}
-            </h1>
+            {/* Category Header */}
+            <div className="flex flex-col items-center text-center mb-8">
+              <h1 className="font-serif font-bold text-[36px] md:text-[42px] leading-[1.1] text-[var(--wsj-text-black)]">
+                {category.name}
+              </h1>
+              {category.description && (
+                <p className="mt-2 text-[var(--wsj-font-size-sm)] text-[var(--wsj-text-medium-gray)] font-sans max-w-2xl">
+                  {category.description}
+                </p>
+              )}
+              <div className="mt-4 w-16 h-[1px] bg-[var(--wsj-border-light)]" />
+            </div>
 
             {articles.length === 0 ? (
               <div className="text-center py-20">
@@ -216,7 +224,7 @@ export default async function CategoryPage({ params }: PageProps) {
                           )}
                           
                           {/* Text Content */}
-                          <div className="flex-1 flex flex-col justify-center">
+                          <div className="flex-1 flex flex-col justify-start">
                             {/* Category */}
                             <div className="mb-2">
                               <span className="text-[11px] font-sans font-bold uppercase tracking-wider text-[var(--wsj-blue-primary)]">

@@ -228,7 +228,7 @@ export default async function HomePage() {
                           </div>
                         ) : null
                       })()}
-                      <h1 className="font-serif font-bold text-[42px] md:text-[48px] leading-[var(--wsj-line-height-tight)] mb-3 text-[var(--wsj-text-black)] group-hover:underline">
+                      <h1 className="font-serif font-bold text-[36px] md:text-[42px] leading-[var(--wsj-line-height-tight)] mb-3 text-[var(--wsj-text-black)] group-hover:underline">
                         {mainFeaturedArticle.title}
                       </h1>
                       {mainFeaturedArticle.excerpt && (
@@ -414,17 +414,16 @@ export default async function HomePage() {
                           </Link>
                         </div>
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                          {categoryArticles.map((article, idx) => {
+                          {categoryArticles.map((article) => {
                             const articleUrl = getArticleUrl(article)
-                            const showImage = idx === 0 // Only first article has image
-                            const articleImageUrl = showImage && article.featuredImageMediaId
+                            const articleImageUrl = article.featuredImageMediaId
                               ? `${baseUrl}/api/media/${article.featuredImageMediaId}`
-                              : showImage && article.featuredImage || null
+                              : article.featuredImage || null
 
                             return (
                               <article key={article.id} className="group">
                                 <Link href={articleUrl} className="block">
-                                  {showImage && articleImageUrl && (
+                                  {articleImageUrl && (
                                     <div className="relative w-full aspect-[16/10] overflow-hidden mb-3">
                                       <Image
                                         src={articleImageUrl}
@@ -439,7 +438,7 @@ export default async function HomePage() {
                                   <h4 className="font-serif font-bold text-[var(--wsj-font-size-base)] leading-[var(--wsj-line-height-relaxed)] text-[var(--wsj-text-black)] group-hover:underline mb-2">
                                     {article.title}
                                   </h4>
-                                  {showImage && article.excerpt && (
+                                  {article.excerpt && (
                                     <p className="text-[var(--wsj-font-size-sm)] text-[var(--wsj-text-dark-gray)] line-clamp-2 font-serif mb-2">
                                       {article.excerpt}
                                     </p>
