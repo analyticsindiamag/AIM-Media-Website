@@ -198,7 +198,7 @@ export function Header() {
       <div className={`bg-white transition-all duration-300 ${isScrolled ? 'py-1' : ''}`}>
         <div className="wsj-container">
           {/* Logo and Search row */}
-          <div className={`flex items-center justify-between px-4 md:px-8 border-b border-[var(--wsj-border-light)] transition-all duration-300 ${isScrolled ? 'py-1' : 'py-3'}`}>
+          <div className={`flex items-center justify-between px-4 md:px-8 transition-all duration-300 ${isScrolled ? 'py-1' : 'py-3'}`}>
             {/* Centered Logo */}
             <div className="flex-1"></div>
             <Link href="/" className="flex items-center justify-center flex-1" aria-label="Home">

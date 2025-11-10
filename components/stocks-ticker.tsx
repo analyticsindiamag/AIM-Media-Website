@@ -101,13 +101,13 @@ export function StocksTicker() {
               return (
                 <div
                   key={`${stock.symbol}-${index}`}
-                  className="flex items-center gap-2 whitespace-nowrap"
+                  className="flex items-center gap-2 whitespace-nowrap font-semibold"
                   style={{
                     fontSize: 'var(--wsj-font-size-ticker)',
                     fontFamily: 'var(--wsj-font-sans)',
                   }}
                 >
-                  <span className="font-medium text-[var(--wsj-text-black)]">{stock.symbol}</span>
+                  <span className="text-[var(--wsj-text-black)]">{stock.symbol}</span>
                   <span className="text-[var(--wsj-text-dark-gray)]">{displayPrice}</span>
                   <span
                     className={`font-medium ${isPositive ? 'text-[var(--wsj-green-positive)]' : 'text-[var(--wsj-red-negative)]'}`}
