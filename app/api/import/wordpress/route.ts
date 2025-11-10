@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { decodeHtmlEntities } from '@/lib/wordpress-mapper'
 
 // Types for import report
 interface ImportRowData {
@@ -259,7 +260,7 @@ function validateRowData(data: ImportRowData): ValidationResult {
 
   // Category validation
   if (data.categoryRaw && data.categoryRaw.trim()) {
-    const categoryName = data.categoryRaw.split(/[;|,]/)[0].replace(/&amp;/g, '&').trim()
+    const categoryName = data.categoryRaw.split(/[;|,]/)[0].trim()
     if (categoryName.length > 100) {
       errors.push(`Category name is too long (max 100 characters): "${categoryName}"`)
     }
@@ -403,10 +404,11 @@ export async function POST(request: NextRequest) {
         } = rowData
 
         // Determine category (first if multiple separated by ; , |)
-        const categoryName = (categoryRaw || 'General')
-          .split(/[;|,]/)[0]
-          .replace(/&amp;/g, '&')
-          .trim()
+        const categoryName = decodeHtmlEntities(
+          (categoryRaw || 'General')
+            .split(/[;|,]/)[0]
+            .trim()
+        )
         const categorySlug = toSlug(categoryName || 'general')
 
         let category = await prisma.category.findFirst({
@@ -419,7 +421,9 @@ export async function POST(request: NextRequest) {
         }
 
         // Determine editor - prioritize email matching, then name
-        const editorName = [authorFirst, authorLast].filter(Boolean).join(' ').trim() || authorUsername || 'Admin'
+        const editorName = decodeHtmlEntities(
+          [authorFirst, authorLast].filter(Boolean).join(' ').trim() || authorUsername || 'Admin'
+        )
         const editorEmail = (authorEmail || `${(authorUsername || 'admin').toLowerCase()}@example.com`).trim()
         
         let editor = null
@@ -487,9 +491,9 @@ export async function POST(request: NextRequest) {
           }
           
           const updateData: any = {
-              title,
-              excerpt: excerpt || null,
-              content,
+              title: decodeHtmlEntities(title),
+              excerpt: excerpt ? decodeHtmlEntities(excerpt) : null,
+              content: decodeHtmlEntities(content),
               featuredImage: imageUrl || null,
               published,
               publishedAt: finalPublishedAt,
@@ -498,12 +502,12 @@ export async function POST(request: NextRequest) {
               editorId: editor.id,
           }
           
-          if (imageTitle) updateData.featuredImageTitle = imageTitle
-          if (imageCaption) updateData.featuredImageCaption = imageCaption
-          if (imageDescription) updateData.featuredImageDescription = imageDescription
-          if (imageAltText) updateData.featuredImageAltText = imageAltText
-          if (metaTitle) updateData.metaTitle = metaTitle
-          if (metaDescription) updateData.metaDescription = metaDescription
+          if (imageTitle) updateData.featuredImageTitle = decodeHtmlEntities(imageTitle)
+          if (imageCaption) updateData.featuredImageCaption = decodeHtmlEntities(imageCaption)
+          if (imageDescription) updateData.featuredImageDescription = decodeHtmlEntities(imageDescription)
+          if (imageAltText) updateData.featuredImageAltText = decodeHtmlEntities(imageAltText)
+          if (metaTitle) updateData.metaTitle = decodeHtmlEntities(metaTitle)
+          if (metaDescription) updateData.metaDescription = decodeHtmlEntities(metaDescription)
           
           await prisma.article.update({
             where: { id: existingArticle.id },
@@ -525,10 +529,10 @@ export async function POST(request: NextRequest) {
           }
 
           const createData: any = {
-              title,
+              title: decodeHtmlEntities(title),
               slug: uniqueSlug,
-              excerpt: excerpt || null,
-              content,
+              excerpt: excerpt ? decodeHtmlEntities(excerpt) : null,
+              content: decodeHtmlEntities(content),
               featuredImage: imageUrl || null,
               published,
               publishedAt: published ? publishedAt : null,
@@ -537,12 +541,12 @@ export async function POST(request: NextRequest) {
               editorId: editor.id,
           }
           
-          if (imageTitle) createData.featuredImageTitle = imageTitle
-          if (imageCaption) createData.featuredImageCaption = imageCaption
-          if (imageDescription) createData.featuredImageDescription = imageDescription
-          if (imageAltText) createData.featuredImageAltText = imageAltText
-          if (metaTitle) createData.metaTitle = metaTitle
-          if (metaDescription) createData.metaDescription = metaDescription
+          if (imageTitle) createData.featuredImageTitle = decodeHtmlEntities(imageTitle)
+          if (imageCaption) createData.featuredImageCaption = decodeHtmlEntities(imageCaption)
+          if (imageDescription) createData.featuredImageDescription = decodeHtmlEntities(imageDescription)
+          if (imageAltText) createData.featuredImageAltText = decodeHtmlEntities(imageAltText)
+          if (metaTitle) createData.metaTitle = decodeHtmlEntities(metaTitle)
+          if (metaDescription) createData.metaDescription = decodeHtmlEntities(metaDescription)
 
           await prisma.article.create({
             data: createData,

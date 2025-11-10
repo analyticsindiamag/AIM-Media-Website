@@ -22,10 +22,70 @@ export function toSlug(s: string): string {
 }
 
 /**
- * Strip HTML tags from text
+ * Decode HTML entities in text
+ * Handles both named entities (&amp;, &quot;) and numeric entities (&#8217;, &#8220;)
+ * Works for both plain text and HTML content (preserves HTML structure)
+ */
+export function decodeHtmlEntities(text: string): string {
+  if (!text) return text
+  
+  // First decode numeric entities (&#8217;, &#8220;, etc.)
+  // These are decimal entities like &#8217; (right single quotation mark)
+  let decoded = text.replace(/&#(\d+);/g, (match, dec) => {
+    const code = parseInt(dec, 10)
+    // Handle common WordPress entities
+    // 8217 = right single quotation mark (')
+    // 8220 = left double quotation mark (")
+    // 8221 = right double quotation mark (")
+    // 8211 = en dash (–)
+    // 8212 = em dash (—)
+    return String.fromCharCode(code)
+  })
+  
+  // Then decode hex entities (&#x27;, etc.)
+  decoded = decoded.replace(/&#x([0-9a-fA-F]+);/gi, (match, hex) => {
+    return String.fromCharCode(parseInt(hex, 16))
+  })
+  
+  // Finally decode named entities (must be last to avoid double-decoding)
+  // Common WordPress entities
+  const entityMap: Record<string, string> = {
+    '&amp;': '&',
+    '&lt;': '<',
+    '&gt;': '>',
+    '&quot;': '"',
+    '&apos;': "'",
+    '&nbsp;': ' ',
+    '&copy;': '©',
+    '&reg;': '®',
+    '&trade;': '™',
+    '&hellip;': '…',
+    '&mdash;': '—',
+    '&ndash;': '–',
+    '&lsquo;': ''',
+    '&rsquo;': ''',
+    '&ldquo;': '"',
+    '&rdquo;': '"',
+    '&lsaquo;': '‹',
+    '&rsaquo;': '›',
+    '&laquo;': '«',
+    '&raquo;': '»',
+  }
+  
+  for (const [entity, char] of Object.entries(entityMap)) {
+    // Use word boundary or semicolon to avoid partial matches
+    decoded = decoded.replace(new RegExp(entity.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'g'), char)
+  }
+  
+  return decoded
+}
+
+/**
+ * Strip HTML tags from text and decode HTML entities
  */
 export function stripHtml(html: string): string {
-  return html.replace(/<[^>]*>/g, '').trim()
+  const stripped = html.replace(/<[^>]*>/g, '').trim()
+  return decodeHtmlEntities(stripped)
 }
 
 /**
@@ -62,10 +122,10 @@ export function mapWordPressUserToEditor(user: WordPressUser): EditorData {
                     undefined
 
   return {
-    name: user.name,
+    name: decodeHtmlEntities(user.name),
     email,
     slug,
-    bio: user.description || undefined,
+    bio: user.description ? decodeHtmlEntities(user.description) : undefined,
     avatar: avatarUrl,
   }
 }
@@ -80,10 +140,11 @@ export interface CategoryData {
 }
 
 export function mapWordPressCategoryToCategory(category: WordPressCategory): CategoryData {
+  const decodedName = decodeHtmlEntities(category.name)
   return {
-    name: category.name,
-    slug: category.slug || toSlug(category.name),
-    description: category.description || undefined,
+    name: decodedName,
+    slug: category.slug || toSlug(decodedName),
+    description: category.description ? decodeHtmlEntities(category.description) : undefined,
   }
 }
 
@@ -121,26 +182,26 @@ export function mapWordPressPostToArticle(
   const publishedAt = isPublished ? new Date(post.date) : undefined
   const scheduledAt = isScheduled ? new Date(post.date) : undefined
 
-  // Extract title (decode HTML entities)
+  // Extract title (strip HTML and decode HTML entities)
   const title = stripHtml(post.title.rendered)
 
-  // Extract excerpt (strip HTML, limit length)
+  // Extract excerpt (strip HTML, decode entities, limit length)
   const excerptHtml = stripHtml(post.excerpt.rendered)
   const excerpt = excerptHtml.length > 500 ? excerptHtml.substring(0, 500) : excerptHtml
 
-  // Content is already HTML, keep as is
-  const content = post.content.rendered
+  // Content is HTML, decode entities but keep HTML structure
+  const content = decodeHtmlEntities(post.content.rendered)
 
   // Featured image handling
   const featuredImage = media?.source_url || undefined
   const featuredImageTitle = media?.title?.rendered ? stripHtml(media.title.rendered) : undefined
   const featuredImageCaption = media?.caption?.rendered ? stripHtml(media.caption.rendered) : undefined
   const featuredImageDescription = media?.description?.rendered ? stripHtml(media.description.rendered) : undefined
-  const featuredImageAltText = media?.alt_text || undefined
+  const featuredImageAltText = media?.alt_text ? decodeHtmlEntities(media.alt_text) : undefined
 
   // SEO meta fields
-  const metaTitle = post.meta?._yoast_wpseo_title || undefined
-  const metaDescription = post.meta?._yoast_wpseo_metadesc || undefined
+  const metaTitle = post.meta?._yoast_wpseo_title ? decodeHtmlEntities(post.meta._yoast_wpseo_title) : undefined
+  const metaDescription = post.meta?._yoast_wpseo_metadesc ? decodeHtmlEntities(post.meta._yoast_wpseo_metadesc) : undefined
 
   // Calculate read time
   const readTime = calculateReadTime(content)

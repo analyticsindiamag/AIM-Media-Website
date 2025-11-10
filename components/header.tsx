@@ -270,7 +270,7 @@ export function Header() {
 
           {/* Main Navigation row */}
           <nav className={`px-4 md:px-8 transition-all duration-300 ${isScrolled ? 'hidden' : ''}`}>
-            <div className="flex items-center justify-between gap-0 h-[var(--wsj-header-nav-height)] overflow-x-auto">
+            <div className="flex items-center justify-between gap-0 h-[var(--wsj-header-nav-height)]">
               <div className="flex items-center gap-0">
                 {navLinks.map((l, index) => {
                   const isActive = pathname === l.href || (l.href !== '/' && pathname?.startsWith(l.href))

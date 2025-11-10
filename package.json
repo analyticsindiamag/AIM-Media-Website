@@ -14,7 +14,8 @@
     "seed": "prisma db seed",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
-    "test:e2e:production": "playwright test --config=playwright.production.config.ts"
+    "test:e2e:production": "playwright test --config=playwright.production.config.ts",
+    "fix-entities": "npx tsx scripts/decode-existing-entities.ts"
   },
   "dependencies": {
     "@huggingface/inference": "^4.13.1",
