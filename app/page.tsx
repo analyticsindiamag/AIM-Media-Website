@@ -228,7 +228,7 @@ export default async function HomePage() {
                           </div>
                         ) : null
                       })()}
-                      <h1 className="font-serif font-bold text-[36px] md:text-[42px] leading-[var(--wsj-line-height-tight)] mb-3 text-[var(--wsj-text-black)] group-hover:underline">
+                      <h1 className="font-serif font-bold text-[30px] md:text-[36px] leading-[var(--wsj-line-height-tight)] mb-3 text-[var(--wsj-text-black)] group-hover:underline">
                         {mainFeaturedArticle.title}
                       </h1>
                       {mainFeaturedArticle.excerpt && (

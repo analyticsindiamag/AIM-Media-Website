@@ -242,7 +242,7 @@ export default async function ArticlePage({ params }: PageProps) {
             </div>
 
             {/* Article Title */}
-            <h1 className="font-serif font-bold text-[36px] md:text-[44px] leading-[1.1] mb-4 text-[var(--wsj-text-black)]">
+            <h1 className="font-serif font-bold text-[var(--wsj-font-size-6xl)] md:text-[var(--wsj-font-size-7xl)] leading-[1.1] mb-4 text-[var(--wsj-text-black)]">
               {article.title}
             </h1>
 
